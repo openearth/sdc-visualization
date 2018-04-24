@@ -1,0 +1,6 @@
+bokeh==0.12.13
+geojson==2.3.0
+ipython==6.2.1
+matplotlib==2.1.0
+numpy==1.13.3
+pandas==0.21.1
