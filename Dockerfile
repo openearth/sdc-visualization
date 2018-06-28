@@ -3,8 +3,8 @@ FROM jupyter/minimal-notebook
 USER root
 
 COPY requirements.txt notebooks/*.ipynb ./work/
-# Copy the start notebook script to start-notebook
-COPY scripts/start-notebook /usr/local/bin/start-notebook
+# Copy the mount command to the proper directory
+COPY scripts/mount-b2drop /etc/init.d/mount-b2drop
 # Copy the logging code to the home directory
 COPY scripts/b-log .b-log
 #

@@ -4,15 +4,22 @@ export B2DROP_PASSWORD=$2
 export WEBDAV_URL=$3
 
 # print ENV variables
-echo "User is $B2DROP_USER"
-echo "URL is $WEBDAV_URL"
-if [ -z "${B2DROP_PASSWORD}" ]; then
-    echo "B2DROP_PASSWORD is unset or set to the empty string"
+DEBUG "User is $B2DROP_USER"
+DEBUG "URL is $WEBDAV_URL"
+
+if [ -z "${B2DROP_USER}" ];
+then
+    WARN "B2DROP_USER is unset or set to the empty string"
 fi
 
-if [ -z "${B2DROP_USER}" ]; then
-    echo "B2DROP_USER is unset or set to the empty string"
-else
+if [ -z "${B2DROP_PASSWORD}" ];
+then
+    WARN "B2DROP_PASSWORD is unset or set to the empty string"
+fi
+
+
+if [ ! -z "${B2DROP_USER}" -a ! -z "${B2DROP_PASSWORD}" ];
+then
     # Create entry in secrets file
     echo "$WEBDAV_URL $B2DROP_USER $B2DROP_PASSWORD" >> /etc/davfs2/secrets
 
