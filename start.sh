@@ -5,7 +5,6 @@ export WEBDAV_URL=$3
 
 # print ENV variables
 echo "User is $B2DROP_USER"
-echo "Password is $B2DROP_PASSWORD"
 echo "URL is $WEBDAV_URL"
 
 if [ -z "${B2DROP_USER}" ]; then
