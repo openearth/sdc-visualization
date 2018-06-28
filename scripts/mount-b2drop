@@ -1,4 +1,5 @@
 #!/bin/sh
+source ~/.b-log
 export B2DROP_USER=$1
 export B2DROP_PASSWORD=$2
 export WEBDAV_URL=$3
