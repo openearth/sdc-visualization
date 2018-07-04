@@ -2,11 +2,13 @@ FROM jupyter/minimal-notebook
 
 USER root
 
-ENV PATH="/etc/init.d:${PATH}"
-
 COPY requirements.txt notebooks/*.ipynb ./work/
-COPY start.sh /etc/init.d/
-
+# Copy the mount command to the proper directory
+COPY scripts/mount-b2drop /etc/init.d/mount-b2drop
+# Copy the logging code to the home directory
+COPY scripts/b-log .b-log
+#
+RUN echo ". ~/.b-log" >> ~/.bashrc
 RUN pip install -r ./work/requirements.txt && \
     rm ./work/requirements.txt && \
     apt-get update && \
