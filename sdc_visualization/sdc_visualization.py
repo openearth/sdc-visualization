@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.animation import FFMpegWriter
 
+from bokeh.models import HoverTool, TapTool, CustomJS, ColumnDataSource
+from bokeh.plotting import figure, show
 
 class ODV:
     def __init__(self, filenames):
@@ -30,14 +32,17 @@ class ODV:
         self.profiles = []
 
         for path in self.paths:
-            if (path.endswith(('.txt', '.csv'))):
-                data = self.read_txt(self.path)
-            elif (path.endswith(('.nc'))):
-                data = self.read_nc(self.path)
-            self.grids.extend(data['grids'])
-            self.trajectories.extend(data['trajectories'])
-            self.profiles.extend(data['profiles'])
-
+            if (path.suffix in ('.txt', '.csv')):
+                data = self.read_txt(path)
+            elif (path.suffix in ('.tar', '.tgz')):
+                self.read_tar(path)
+                data = self.read_txt(path.with_suffix('.txt'))
+            elif (path.suffix in ('.nc')):
+                data = self.read_nc(path)
+            self.grids.append(data['grids'])
+            self.trajectories.append(data['trajectories'])
+            self.profiles.append(data['profiles'])
+                
     def read_txt(self, path):
         """unpack an ODV tar file"""
         data = pd.read_csv(
@@ -48,59 +53,58 @@ class ODV:
             sep=r'\t',
             engine='python'
         )
+        
         return {
+            "grids": [],
+            "trajectories": [],
             "profiles": data
         }
 
-    def read_nc(self):
+    def read_nc(self, path):
         """read some variables and return an open file handle"""
-        data = nc.Dataset(self.path)
+        data = nc.Dataset(path)
         lat = data['lat'][:]
         lon = data['lon'][:]
         time = data['time'][:]
         return {
-            "grd": {
+            "grids": {
                 "lat": lat,
                 "lon": lon,
                 "time": time,
                 "nc_file": data
-            }
+            },
+            "trajectories": [],
+            "profiles": []
         }
 
-    def animation(self, lat, lon, sub, time):
-        metadata = dict(
-            title='Movie Test',
-            artist='Matplotlib',
-            comment='Movie support!'
-        )
-        writer = FFMpegWriter(fps=15, metadata=metadata)
-        folder = 'temp'
-        files = glob.glob(folder +"/*.png")
-        files.sort(key=os.path.getmtime)
-        images = []
-        plt.ioff()
-        image = BytesIO()
-        lat_min = lat.min()
-        lat_max = lat.max()
-        lon_min = lon.min()
-        lon_max = lon.max()
-        fig, ax = plt.subplots()
-        ax.set_axis_off()
-        plot, = plt.pcolormesh(lon, lat, sub[0, :, :])
-        fig.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0,  hspace = 0, wspace = 0)
-        ax.margins(0,0)
-        ax.set_xlim(lon_min, lon_max)
-        ax.set_ylim(lat_min, lat_max)
-        ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
-        ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
+    def read_tar(self, path):
+        """Read tar file and open text file """
+        tar = tarfile.open(path, "r:gz")
+        tar.extractall()
+            
+    def animation(self, index, subname, time):
+        writer = FFMpegWriter(fps=15)
+        assert (self.grids[index] != []), "No grids defined"
+        assert (subname in self.grids[index]['nc_file'].variables.keys()), "Substance name not defined, choose from: " + str(self.grids[index]['nc_file'].variables.keys())
+        lat = self.grids[index]['lat'][:]
+        lon = self.grids[index]['lon'][:]
+        sub = self.grids[index]['nc_file'][subname][time, 0, :, :]
+
+        lon_min, lon_max, lat_min, lat_max, image, fig = self.create_image(lat, lon, sub)
         with writer.saving(fig, "writer_test.mp4", 100):
             for t in range(len(time)):
-                plot.set_data = lon, lat, sub[t, :, :]
+                fig.set_data = lon, lat, sub[t, :, :]
                 writer.grab_frame()
+        
 
-    def mapbox_image_layer(self, lat, lon, sub):
-        assert (np.shape(lat) == np.shape(lon) & np.shape(lat) == np.shape(sub)), "Shape of lat, lon and sub should be equal"
-        lon_min, lon_max, lat_min, lat_max, image, canvas = self.createImage(lat, lon, 0)
+    def mapbox_image_layer(self, index, subname, time=0):
+        assert (self.grids[index] != []), "No grids defined"
+        assert (subname in self.grids[index]['nc_file'].variables.keys()), "Substance name not defined, choose from: " + str(self.grids[index]['nc_file'].variables.keys())
+        lat = self.grids[index]['lat'][:]
+        lon = self.grids[index]['lon'][:]
+        sub = self.grids[index]['nc_file'][subname][time, 0, :, :]
+
+        lon_min, lon_max, lat_min, lat_max, image, fig = self.create_image(lat, lon, sub)
         plt.savefig(image, format='png', transparent=True, pad_inches=0, dpi=200)
         im = str(base64.b64encode(image.getvalue()))
         return {
@@ -117,7 +121,8 @@ class ODV:
                               ]
             }
         }
-    def create_image(self, lat, lon, sub, t):
+            
+    def create_image(self, lat, lon, sub):
         plt.ioff()
         image = BytesIO()
         lat_min = lat.min()
@@ -128,39 +133,56 @@ class ODV:
         ax = fig.gca()
         ax = fig.add_subplot(111)
         ax.set_axis_off()
-        plt.pcolormesh(lon, lat, sub[t, :, :])
+        plt.pcolormesh(lon, lat, sub)
         fig.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0,  hspace = 0, wspace = 0)
         ax.margins(0,0)
         ax.set_xlim(lon_min, lon_max)
         ax.set_ylim(lat_min, lat_max)
         ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
         ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
-#        fig.canvas.draw ( )
-#
-#        # Get the RGBA buffer from the figure
-#        w,h = fig.canvas.get_width_height()
-#        buf = np.fromstring( fig.canvas.print_to_buffer(), dtype=np.uint8 )
-#        buf.shape = ( w, h,4 )
-#
-#        # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
-#        buf = np.roll ( buf, 3, axis = 2 )
-        print(fig.canvas.print_to_buffer())
-        return lon_min, lon_max, lat_min, lat_max, image, fig.canvas.print_to_buffer()
-
-    def time_series(self, data, subname):
-        assert (subname in data.columns.values), "Subname incorrect, use one of: " + data.columns.values
-        sub = data[subname]
-        time = pd.to_datetime(data['time'], format='%Y-%m-%dT%H:%M:%S')
+        return lon_min, lon_max, lat_min, lat_max, image, fig
+#    def timeSeries(self, data, subname):
+#        assert (subname in data.columns.values), "Subname incorrect, use one of: " + data.columns.values
+#        sub = data[subname]
+#        time = pd.to_datetime(data['time'], format='%Y-%m-%dT%H:%M:%S')
+#        TOOLS = 'pan, wheel_zoom, box_zoom, reset, save, box_select, lasso_select'
+#        
+#        left = figure(plot_width=300, plot_height=300, tools=TOOLS, title=subname, x_axis_type='datetime')
+#        left.circle(time, sub, line_width=2)
+#    
+#        p2 = gridplot([left], title='Data plots', toolbar_location='above',
+#               plot_width=400, plot_height=300);
+#        
+#        script, div = components(p2)
+#        show(p2)
+#        return script, div
+    def timeseries_plot(self, index, subname):
+        print(self.profiles[index])
+        data = pd.DataFrame(self.profiles[index])
+        print(data.head())
+        assert (subname in data.columns.values), "Subname incorrect, use one of: " + str(data.columns.values)
+        sub = self.profiles[index][subname]
+        time = pd.to_datetime(self.profiles[index]['yyyy-mm-ddThh:mm:ss.sss'], format='%Y-%m-%dT%H:%M:%S')
         TOOLS = 'pan, wheel_zoom, box_zoom, reset, save, box_select, lasso_select'
 
-        left = figure(plot_width=300, plot_height=300, tools=TOOLS, title=subname, x_axis_type='datetime')
-        left.circle(time, sub, line_width=2)
+        p = figure(plot_width=300, plot_height=300, tools=TOOLS, title=subname, x_axis_type='datetime')
+        p.line(time, sub, line_width=2)
 
-        p2 = gridplot([left], title='Data plots', toolbar_location='above',
-               plot_width=400, plot_height=300);
+        script, div = components(p)
+        show(p)
+        return script, div
+    
+    def profiles_plot(self, index, subname): 
+        assert (subname in self.profiles[index].columns.values), "Subname incorrect, use one of: " + self.profiles[index].columns.values
+        sub = self.profiles[index][subname]
+        time = pd.to_datetime(self.profiles[index]['yyyy-mm-ddThh:mm:ss.sss'], format='%Y-%m-%dT%H:%M:%S')
+        TOOLS = 'pan, wheel_zoom, box_zoom, reset, save, box_select, lasso_select'
 
-        script, div = components(p2)
-        show(p2)
+        p = figure(plot_width=300, plot_height=300, tools=TOOLS, title=subname, x_axis_type='datetime')
+        p.line(time, sub, line_width=2)
+
+        script, div = components(p)
+        show(p)
         return script, div
 
     def cruise_geojson(self, data):
@@ -187,14 +209,12 @@ class ODV:
                         }
                    }
             featcol.append(feat)
-        FC = FeatureCollection(featcol)
+        FC = geojson.FeatureCollection(featcol)
         return FC
 
 if __name__ == '__main__':
-    tgzfile = ODV('SDN_Elba_SpreadSheet_2.tgz')
-    ncfile = ODV(r'C:/Users/vries_cy/sdc-visualization/sdc_visualization/Water_body_Salinity_eb.4Danl.nc')
-    print(ncfile.filename)
-    lat, lon, sub, time = ncfile.readODVfile('Salinity')
-    importdata = tgzfile.readODVfile()
-    ncfile.animation(lat, lon, sub, time)
-    tgzfile.timeSeries(importdata, 'salinity')
+    ODVobj = ODV(['SDN_Elba_SpreadSheet_2.tgz', r'C:/Users/vries_cy/sdc-visualization/sdc_visualization/Water_body_Salinity_eb.4Danl.nc'])
+    image_layer = ODVobj.mapbox_image_layer(1, 'Salinity', 0)
+    ODVobj.timeseries_plot(0, 'Water body salinity [per mille]')
+    ODVobj.animation(1, 'Salinity', 0)
+    
