@@ -5,6 +5,7 @@ import io
 import base64
 
 import pandas as pd
+import numpy as np
 import netCDF4 as nc
 import geojson
 
@@ -127,7 +128,7 @@ class ODV:
 
         with writer.saving(img_info['fig'], "%s.mp4" % (substance, ), 100):
             for idx in range(len(time_idx)):
-                img_info['pcolor'].set_array(substance_arr[idx, :, :].ravel())
+                img_info['pcolor'].set_array(substance_arr[idx, :-1, :-1].ravel())
                 writer.grab_frame()
 
     def mapbox_geojson_layer(self, index):
@@ -174,14 +175,14 @@ class ODV:
             }
         }
 
-    def create_image(self, lat, lon, sub):
+    def create_image(self, lat, lon, arr):
         lat_min = lat.min()
         lat_max = lat.max()
         lon_min = lon.min()
         lon_max = lon.max()
         fig, ax = plt.subplots()
         ax.set_axis_off()
-        pcolor = ax.pcolormesh(lon, lat, sub)
+        pcolor = ax.pcolormesh(lon, lat, arr)
         fig.subplots_adjust(
             top=1,
             bottom=0,
