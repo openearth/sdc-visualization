@@ -34,7 +34,7 @@ class ODV:
             if (path.suffix in ('.txt', '.csv')):
                 data = self.read_txt(path)
             elif (path.suffix in ('.tar', '.tgz')):
-                self.read_tar(path)
+                self.extract_tar(path)
                 data = self.read_txt(path.with_suffix('.txt'))
             elif (path.suffix in ('.nc')):
                 data = self.read_nc(path)
@@ -52,13 +52,44 @@ class ODV:
             sep=r'\t',
             engine='python'
         )
+        
+        trajects = self.create_trajectories(data)
 
         return {
             "grids": [],
-            "trajectories": [],
+            "trajectories": trajects,
             "profiles": data
         }
 
+    def create_trajectories(self, data):
+        cruises = data.Cruise.unique()
+
+        data = data.fillna('None')
+        featcol = []
+
+        for cruise in cruises[:5]:
+            cruise_data = data.loc[data['Cruise'] == cruise]
+            geo = cruise_data[
+                ['Longitude [degrees_east]', 'Latitude [degrees_north]']
+            ].values.tolist()
+            feat = {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': geo
+                },
+                'properties': {
+                    'name': cruise,
+                    'time': cruise_data['yyyy-mm-ddThh:mm:ss.sss'].values.tolist(),
+                    'depth': cruise_data['Depth [m]'].values.tolist(),
+                    'temp': cruise_data['ITS-90 water temperature [degrees C]'].values.tolist(),
+                    'salinity': cruise_data['Water body salinity [per mille]'].values.tolist()
+                }
+            }
+            featcol.append(feat)
+        features = geojson.FeatureCollection(featcol)
+        return features
+    
     def read_nc(self, path):
         """read some variables and return an open file handle"""
         data = nc.Dataset(path)
@@ -90,10 +121,26 @@ class ODV:
         lon = self.grids[index]['lon'][:]
         sub = self.grids[index]['nc_file'][substance][time, 0, :, :]
         img_info = self.create_image(lat, lon, sub)
+        
         with writer.saving(img_info['fig'], "%s.mp4" % (substance, ), 100):
             for t in range(len(time)):
                 img_info['pcolor'].set_data(lon, lat, sub[t, :, :])
                 writer.grab_frame()
+                
+    def mapbox_geojson_layer(self, index): 
+        assert (self.trajectories[index] != []), "No trajectories defined!"
+        return {
+            'id': 'Trajectories',
+            'type': 'line',
+            'source': {
+                'type': 'geojson',
+                'data': self.trajectories[index]
+            },
+            'paint': {
+                'line-color': 'red',
+                'line-width': 2
+            }
+        }
 
     def mapbox_image_layer(self, index, substance, t=0):
         assert (self.grids[index] != []), "No grids defined"
@@ -181,62 +228,10 @@ class ODV:
         bokeh.plotting.show(p)
         return script, div
 
-    def profiles_plot(self, index, substance):
-        substances = self.profiles[index].columns.values
-        assert substance in substances, "Substance incorrect, use one of: " + str(substances)
-
-        sub = self.profiles[index][substance]
-        time = pd.to_datetime(
-            self.profiles[index]['yyyy-mm-ddThh:mm:ss.sss'],
-            format='%Y-%m-%dT%H:%M:%S'
-        )
-        tools = 'pan, wheel_zoom, box_zoom, reset, save, box_select, lasso_select'
-
-        p = bokeh.plotting.figure(
-            plot_width=300,
-            plot_height=300,
-            tools=tools,
-            title=substance,
-            x_axis_type='datetime'
-        )
-        p.line(time, sub, line_width=2)
-
-        script, div = bokeh.embed.components(p)
-        bokeh.plotting.show(p)
-        return script, div
-
-    def cruise_geojson(self, data):
-        cruises = data.Cruise.unique()
-
-        data = data.fillna('None')
-        featcol = []
-
-        for cruise in cruises[:5]:
-            cruise_data = data.loc[data['Cruise'] == cruise]
-            geo = cruise_data[
-                ['Longitude [degrees_east]', 'Latitude [degrees_north]']
-            ].values.tolist()
-            feat = {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'LineString',
-                    'coordinates': geo
-                },
-                'properties': {
-                    'name': cruise,
-                    'time': cruise_data['yyyy-mm-ddThh:mm:ss.sss'].values.tolist(),
-                    'depth': cruise_data['Depth [m]'].values.tolist(),
-                    'temp': cruise_data['ITS-90 water temperature [degrees C]'].values.tolist(),
-                    'salinity': cruise_data['Water body salinity [per mille]'].values.tolist()
-                }
-            }
-            featcol.append(feat)
-        features = geojson.FeatureCollection(featcol)
-        return features
-
 
 if __name__ == '__main__':
     odv = ODV(['SDN_Elba_SpreadSheet_2.tgz', r'C:/Users/vries_cy/sdc-visualization/sdc_visualization/Water_body_Salinity_eb.4Danl.nc'])
-    image_layer = odv.mapbox_image_layer(1, 'Salinity', 0)
-    odv.timeseries_plot(0, 'Water body salinity [per mille]')
+#    image_layer = odv.mapbox_image_layer(1, 'Salinity', 0)
+#    geojson_layer = odv.mapbox_geojson_layer(0)
+#    odv.timeseries_plot(0, 'Water body salinity [per mille]')
     odv.animation(1, 'Salinity', 0)
