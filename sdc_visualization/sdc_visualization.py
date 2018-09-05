@@ -52,7 +52,7 @@ class ODV:
             sep=r'\t',
             engine='python'
         )
-        
+
         trajects = self.create_trajectories(data)
 
         return {
@@ -89,18 +89,18 @@ class ODV:
             featcol.append(feat)
         features = geojson.FeatureCollection(featcol)
         return features
-    
+
     def read_nc(self, path):
         """read some variables and return an open file handle"""
         data = nc.Dataset(path)
         lat = data['lat'][:]
         lon = data['lon'][:]
-        time = data['time'][:]
+        t = data['time'][:]
         return {
             "grids": {
                 "lat": lat,
                 "lon": lon,
-                "time": time,
+                "time": t,
                 "nc_file": data
             },
             "trajectories": [],
@@ -109,25 +109,28 @@ class ODV:
 
     def extract_tar(self, path):
         """extract tar file"""
-        tar = tarfile.open(path, "r:gz")
-        tar.extractall()
+        with tarfile.open(path, "r:gz") as tar:
+            tar.extractall(path=path.parent)
 
-    def animation(self, index, substance, time):
+    def animate(self, index, substance, time_idx):
+        """create an mp4 movie for the substance for all time_idxteps (t)"""
         writer = FFMpegWriter(fps=15)
         assert (self.grids[index] != []), "No grids defined"
         substances = self.grids[index]['nc_file'].variables.keys()
         assert substance in substances, "Substance name not in: " + str(substances)
+
         lat = self.grids[index]['lat'][:]
         lon = self.grids[index]['lon'][:]
-        sub = self.grids[index]['nc_file'][substance][time, 0, :, :]
-        img_info = self.create_image(lat, lon, sub)
-        
+        # read variable substance from the file and get the array for depth_idx == 0
+        substance_arr = self.grids[index]['nc_file'].variables[substance][time_idx, 0, :, :]
+        img_info = self.create_image(lat, lon, substance_arr[0])
+
         with writer.saving(img_info['fig'], "%s.mp4" % (substance, ), 100):
-            for t in range(len(time)):
-                img_info['pcolor'].set_data(lon, lat, sub[t, :, :])
+            for idx in range(len(time_idx)):
+                img_info['pcolor'].set_array(substance_arr[idx, :, :].ravel())
                 writer.grab_frame()
-                
-    def mapbox_geojson_layer(self, index): 
+
+    def mapbox_geojson_layer(self, index):
         assert (self.trajectories[index] != []), "No trajectories defined!"
         return {
             'id': 'Trajectories',
@@ -227,11 +230,3 @@ class ODV:
         script, div = bokeh.embed.components(p)
         bokeh.plotting.show(p)
         return script, div
-
-
-if __name__ == '__main__':
-    odv = ODV(['SDN_Elba_SpreadSheet_2.tgz', r'C:/Users/vries_cy/sdc-visualization/sdc_visualization/Water_body_Salinity_eb.4Danl.nc'])
-#    image_layer = odv.mapbox_image_layer(1, 'Salinity', 0)
-#    geojson_layer = odv.mapbox_geojson_layer(0)
-#    odv.timeseries_plot(0, 'Water body salinity [per mille]')
-    odv.animation(1, 'Salinity', 0)

@@ -7,24 +7,41 @@ import pytest
 
 from click.testing import CliRunner
 
-from sdc_visualization import sdc_visualization
+import sdc_visualization
 from sdc_visualization import cli
 
 
 @pytest.fixture
-def response():
-    """Sample pytest fixture.
+def odv():
+    """Sample dataset."""
+    odv = sdc_visualization.ODV([
+        'data/SDN_Elba_SpreadSheet_2.tgz',
+        'data/Water_body_Salinity_eb.4Danl.nc'
+    ])
+    return odv
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+
+def test_animate(odv):
+    """Test if we can create an animation"""
+    odv.animate(1, 'Salinity', [0])
 
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+def test_mapbox_image(odv):
+    """Test if we can create a mapbox layer """
+    image_layer = odv.mapbox_image_layer(1, 'Salinity', 0)
+    assert image_layer is not None
+
+
+def test_geojson_layer(odv):
+    """test if we can create a geojson layer"""
+    geojson_layer = odv.mapbox_geojson_layer(0)
+    assert geojson_layer is not None
+
+
+def test_timeseries_plot(odv):
+    """test if we can create a timeseries plot"""
+    plot = odv.timeseries_plot(0, 'Water body salinity [per mille]')
+    assert plot is not None
 
 
 def test_command_line_interface():
