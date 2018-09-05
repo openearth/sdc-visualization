@@ -19,7 +19,7 @@ RUN pip install -r ./src/requirements.txt && \
 RUN pip install -e ./src
 
 # create configuration and overwrite with custom logging
-RUN jupyter notebook --generate-config
+RUN jupyter notebook --generate-config -y
 RUN chmod 755 .jupyter
 COPY notebooks/jupyter_notebook_config.py .jupyter
 
