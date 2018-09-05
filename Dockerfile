@@ -1,5 +1,5 @@
 FROM jupyter/minimal-notebook
-
+LABEL maintainer="Cindy.vandeVriesSafaviNic@deltares.nl"
 USER root
 
 # update system and install dependencies
