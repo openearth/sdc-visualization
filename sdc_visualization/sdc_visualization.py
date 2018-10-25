@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import netCDF4 as nc
 import geojson
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -20,12 +21,16 @@ import bokeh.embed
 class ODV:
     def __init__(self, filenames):
         """read and visualize ODV format files"""
+        if type(filenames) is not list:
+            filenames = [filenames]
+        
         self.paths = [
             pathlib.Path(filename)
             for filename
             in filenames
-        ]
-        # Following the CF convention date types as described here:
+            ]
+            
+            # Following the CF convention date types as described here:
         # https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/decision_tree_high_res.pdf
         self.grids = []
         self.trajectories = []
@@ -94,9 +99,34 @@ class ODV:
     def read_nc(self, path):
         """read some variables and return an open file handle"""
         data = nc.Dataset(path)
-        lat = data['lat'][:]
-        lon = data['lon'][:]
-        t = data['time'][:]
+        if 'lat' in nc.Dataset(path).variables:
+            lat = data['lat'][:]
+        elif 'latitude' in nc.Dataset(path).variables:
+            lat = data['latitude'][:]
+        if 'lon' in nc.Dataset(path).variables:
+            lon = data['lon'][:]
+        elif 'longitude' in nc.Dataset(path).variables:
+            lon = data['longitude'][:]
+        if 'time' in nc.Dataset(path).variables:
+            t = data['time'][:]
+        elif 'date_time' in nc.Dataset(path).variables:
+            chnc = int(1e5)
+            t = np.empty(len(data['date_time'][:]),dtype=type(datetime.now()))
+            if len(data['date_time'][:]) > chnc: # big
+                # split nans and notnans makes it much faster
+                dtf = np.where( data['date_time'][:].mask==False )
+                dtt = np.where( data['date_time'][:].mask==True )
+                t[dtf] = nc.num2date( data['date_time'][dtf], data['date_time'].units)
+                t[dtt] = nc.num2date( data['date_time'][dtt], data['date_time'].units)
+                
+                # itt = 0
+                #t = np.array((),dtype='int')
+                #for itt in range(0, int(len(data['date_time'][:]) / chnc)):
+                    #tt = nc.num2date(data['date_time'][0+chnc*itt:chnc+chnc*itt], data['date_time'].units)
+                    #t = np.concatenate([t,tt])
+            else:
+                t = data['date_time'][:]
+            
         return {
             "grids": {
                 "lat": lat,
@@ -106,6 +136,7 @@ class ODV:
             },
             "trajectories": [],
             "profiles": []
+            
         }
 
     def extract_tar(self, path):
