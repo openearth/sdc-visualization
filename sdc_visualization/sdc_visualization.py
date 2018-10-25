@@ -19,8 +19,11 @@ import bokeh.embed
 
 
 class ODV:
-    def __init__(self, filenames):
-        """read and visualize ODV format files"""
+    def __init__(self, filenames, timeInterval=[], depthInterval=[],  valueInterval=[]):
+        """Read and visualize ODV format files.
+           As optional arguments, insert time, depth and value intervals,
+           to better and faster slice your data.
+        """
         if type(filenames) is not list:
             filenames = [filenames]
         
@@ -30,7 +33,7 @@ class ODV:
             in filenames
             ]
             
-            # Following the CF convention date types as described here:
+        # Following the CF convention date types as described here:
         # https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/decision_tree_high_res.pdf
         self.grids = []
         self.trajectories = []
@@ -43,7 +46,7 @@ class ODV:
                 self.extract_tar(path)
                 data = self.read_txt(path.with_suffix('.txt'))
             elif (path.suffix in ('.nc')):
-                data = self.read_nc(path)
+                data = self.read_nc(path, timeInterval, depthInterval,valueInterval)
             self.grids.append(data['grids'])
             self.trajectories.append(data['trajectories'])
             self.profiles.append(data['profiles'])
@@ -96,8 +99,8 @@ class ODV:
         features = geojson.FeatureCollection(featcol)
         return features
 
-    def read_nc(self, path):
-        """read some variables and return an open file handle"""
+    def read_nc_all(self, path):
+        """read some variables and return the full netCDF as an open file handle"""
         data = nc.Dataset(path)
         if 'lat' in nc.Dataset(path).variables:
             lat = data['lat'][:]
@@ -139,6 +142,60 @@ class ODV:
             
         }
 
+    def read_nc_slice(self, path, timeInterval, depthInterval, valueInterval):
+        """read some variables and return an open file handle,
+           based on data selection.
+        """
+        data = nc.Dataset(path)
+        if 'lat' in nc.Dataset(path).variables:
+            lat = data['lat'][:]
+        elif 'latitude' in nc.Dataset(path).variables:
+            lat = data['latitude'][:]
+        if 'lon' in nc.Dataset(path).variables:
+            lon = data['lon'][:]
+        elif 'longitude' in nc.Dataset(path).variables:
+            lon = data['longitude'][:]
+        # TODO: sliding in time!
+        if 'time' in nc.Dataset(path).variables:
+            t = data['time'][:]
+        elif 'date_time' in nc.Dataset(path).variables:
+            chnc = int(1e5)
+            t = np.empty(len(data['date_time'][:]),dtype=type(datetime.now()))
+            if len(data['date_time'][:]) > chnc: # big
+                # split nans and notnans makes it much faster
+                dtf = np.where( data['date_time'][:].mask==False )
+                dtt = np.where( data['date_time'][:].mask==True )
+                t[dtf] = nc.num2date( data['date_time'][dtf], data['date_time'].units)
+                t[dtt] = nc.num2date( data['date_time'][dtt], data['date_time'].units)
+                
+            else:
+                t = data['date_time'][:]
+                
+        # TODO: slicing through Depth... Hard with this sort of unstructured netcdf. 
+        if data['var1'].long_name = "Depth":
+            depth = None
+        else:
+            depth = None
+            
+        return {
+            "grids": {
+                "lat": lat,
+                "lon": lon,
+                "time": t,
+                "depth": depth,
+                "nc_file": data
+            },
+            "trajectories": [],
+            "profiles": []
+            
+        }
+    
+    def read_nc(self, path, timeInterval, depthInterval, valueInterval):
+        if timeInterval == depthInterval == valueInterval == []:
+            read_nc_all(self, path)
+        elif:
+            read_nc_slice(self, path, timeInterval, depthInterval, valueInterval)
+    
     def extract_tar(self, path):
         """extract tar file"""
         with tarfile.open(path, "r:gz") as tar:
