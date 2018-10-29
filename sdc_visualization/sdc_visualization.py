@@ -147,35 +147,40 @@ class ODV:
            based on data selection.
         """
         data = nc.Dataset(path)
-        if 'lat' in nc.Dataset(path).variables:
-            lat = data['lat'][:]
-        elif 'latitude' in nc.Dataset(path).variables:
-            lat = data['latitude'][:]
-        if 'lon' in nc.Dataset(path).variables:
-            lon = data['lon'][:]
-        elif 'longitude' in nc.Dataset(path).variables:
-            lon = data['longitude'][:]
-        # TODO: sliding in time!
+
+        # TODO: slicing in time!
         if 'time' in nc.Dataset(path).variables:
             t = data['time'][:]
         elif 'date_time' in nc.Dataset(path).variables:
             chnc = int(1e5)
-            t = np.empty(len(data['date_time'][:]),dtype=type(datetime.now()))
-            if len(data['date_time'][:]) > chnc: # big
+            t0 = nc.date2num ( datetime.strptime(timeInterval[0],'%Y-%m-%d') , data['date_time'].units)
+            t1 = nc.date2num ( datetime.strptime(timeInterval[1],'%Y-%m-%d') , data['date_time'].units)
+            isInDate = np.logical_and(data.variables['date_time'][:] > t0, data.variables['date_time'][:] < t1).data
+            t = np.empty(len(data.variables['date_time'][isInDate]),dtype=type(datetime.now()))
+            if len(data['date_time'][isInDate]) > chnc: # big
                 # split nans and notnans makes it much faster
-                dtf = np.where( data['date_time'][:].mask==False )
-                dtt = np.where( data['date_time'][:].mask==True )
-                t[dtf] = nc.num2date( data['date_time'][dtf], data['date_time'].units)
-                t[dtt] = nc.num2date( data['date_time'][dtt], data['date_time'].units)
+                dtf = np.where( data['date_time'][isInDate].mask==False )
+                dtt = np.where( data['date_time'][isInDate].mask==True )
+                t[dtf] = nc.num2date( data['date_time'][isInDate][dtf], data['date_time'].units)
+                t[dtt] = nc.num2date( data['date_time'][isInDate][dtt], data['date_time'].units)
                 
             else:
-                t = data['date_time'][:]
+                t = data['date_time'][isInDate]
                 
         # TODO: slicing through Depth... Hard with this sort of unstructured netcdf. 
-        if data['var1'].long_name = "Depth":
+        if data['var1'].long_name == "Depth":
             depth = None
         else:
             depth = None
+
+        if 'lat' in nc.Dataset(path).variables:
+            lat = data['lat'][isInDate]
+        elif 'latitude' in nc.Dataset(path).variables:
+            lat = data['latitude'][isInDate]
+        if 'lon' in nc.Dataset(path).variables:
+            lon = data['lon'][isInDate]
+        elif 'longitude' in nc.Dataset(path).variables:
+            lon = data['longitude'][isInDate]
             
         return {
             "grids": {
@@ -192,9 +197,10 @@ class ODV:
     
     def read_nc(self, path, timeInterval, depthInterval, valueInterval):
         if timeInterval == depthInterval == valueInterval == []:
-            read_nc_all(self, path)
-        elif:
-            read_nc_slice(self, path, timeInterval, depthInterval, valueInterval)
+            data = self.read_nc_all(path)
+        else:
+            data = self.read_nc_slice(path, timeInterval, depthInterval, valueInterval)
+        return data
     
     def extract_tar(self, path):
         """extract tar file"""
