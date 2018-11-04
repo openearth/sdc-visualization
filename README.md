@@ -27,6 +27,15 @@ Visualizations of ODV files for SeaDataCloud
 ## mount b2drop in the running Docker container, if needed
 `docker exec -it deltares-jupyter bash /etc/init.d/mount-b2drop <B2DROP_APP_USERNAME> <B2DROP_APP_PASSWORD> https://b2drop.eudat.eu/remote.php/webdav/`
 
+## Run the visualization app using the dataset.nc
+Start the server
+`
+$ sdc_visualization serve dataset.nc
+`
+
+Look at the API response in `http://localhost:5000/api/dataset`.
+
+
 ## Logging
 Both the start-notebook and the b2drop script use logging to stdout. Both use configurable logging as defined in [b-log](https://github.com/idelsink/b-log) for bash in [python logging](https://docs.python.org/3.6/library/logging.html).
 
@@ -34,4 +43,3 @@ Both the start-notebook and the b2drop script use logging to stdout. Both use co
 
 
 This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [`audreyr/cookiecutter-pypackage`](https://github.com/audreyr/cookiecutter-pypackage) project template.
-
