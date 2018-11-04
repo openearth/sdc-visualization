@@ -1,17 +1,35 @@
-# -*- coding: utf-8 -*-
-
 """Console script for sdc_visualization."""
 import sys
+
 import click
 
+from sdc_visualization.server import create_app
+from sdc_visualization import load_dataset
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+@cli.command()
 def main(args=None):
     """Console script for sdc_visualization."""
     click.echo("Replace this message by putting your code into "
                "sdc_visualization.cli.main")
     click.echo("See click documentation at http://click.pocoo.org/")
     return 0
+
+@cli.command()
+@click.option('--debug', default=False, help='Use debug mode.', is_flag=True)
+@click.argument('dataset')
+def serve(debug, dataset, args=None):
+    """Serve sea-data cloud visualisations"""
+    ds = load_dataset(dataset)
+    app = create_app(ds)
+    if debug:
+        kwargs = dict(debug=True, use_reloader=False)
+    else:
+        kwargs ={}
+    app.run(**kwargs)
 
 
 if __name__ == "__main__":

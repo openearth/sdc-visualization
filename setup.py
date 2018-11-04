@@ -32,7 +32,7 @@ setup(
     description="Visualisation tools and services for SeaDataCloud",
     entry_points={
         'console_scripts': [
-            'sdc_visualization=sdc_visualization.cli:main',
+            'sdc_visualization=sdc_visualization.cli:cli',
         ],
     },
     install_requires=requirements,

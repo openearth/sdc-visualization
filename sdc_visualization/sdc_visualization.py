@@ -6,7 +6,7 @@ import base64
 
 import pandas as pd
 import numpy as np
-import netCDF4 as nc
+import netCDF4
 import geojson
 from datetime import datetime
 
@@ -26,13 +26,13 @@ class ODV:
         """
         if type(filenames) is not list:
             filenames = [filenames]
-        
+
         self.paths = [
             pathlib.Path(filename)
             for filename
             in filenames
             ]
-            
+
         # Following the CF convention date types as described here:
         # https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/decision_tree_high_res.pdf
         self.grids = []
@@ -101,27 +101,27 @@ class ODV:
 
     def read_nc_all(self, path):
         """read some variables and return the full netCDF as an open file handle"""
-        data = nc.Dataset(path)
-        if 'lat' in nc.Dataset(path).variables:
+        data = netCDF4.Dataset(path)
+        if 'lat' in netCDF4.Dataset(path).variables:
             lat = data['lat'][:]
-        elif 'latitude' in nc.Dataset(path).variables:
+        elif 'latitude' in netCDF4.Dataset(path).variables:
             lat = data['latitude'][:]
-        if 'lon' in nc.Dataset(path).variables:
+        if 'lon' in netCDF4.Dataset(path).variables:
             lon = data['lon'][:]
-        elif 'longitude' in nc.Dataset(path).variables:
+        elif 'longitude' in netCDF4.Dataset(path).variables:
             lon = data['longitude'][:]
-        if 'time' in nc.Dataset(path).variables:
+        if 'time' in netCDF4.Dataset(path).variables:
             t = data['time'][:]
-        elif 'date_time' in nc.Dataset(path).variables:
+        elif 'date_time' in netCDF4.Dataset(path).variables:
             chnc = int(1e5)
             t = np.empty(len(data['date_time'][:]),dtype=type(datetime.now()))
             if len(data['date_time'][:]) > chnc: # big
                 # split nans and notnans makes it much faster
                 dtf = np.where( data['date_time'][:].mask==False )
                 dtt = np.where( data['date_time'][:].mask==True )
-                t[dtf] = nc.num2date( data['date_time'][dtf], data['date_time'].units)
-                t[dtt] = nc.num2date( data['date_time'][dtt], data['date_time'].units)
-                
+                t[dtf] = netCDF4.num2date( data['date_time'][dtf], data['date_time'].units)
+                t[dtt] = netCDF4.num2date( data['date_time'][dtt], data['date_time'].units)
+
                 # itt = 0
                 #t = np.array((),dtype='int')
                 #for itt in range(0, int(len(data['date_time'][:]) / chnc)):
@@ -129,7 +129,7 @@ class ODV:
                     #t = np.concatenate([t,tt])
             else:
                 t = data['date_time'][:]
-            
+
         return {
             "grids": {
                 "lat": lat,
@@ -139,49 +139,49 @@ class ODV:
             },
             "trajectories": [],
             "profiles": []
-            
+
         }
 
     def read_nc_slice(self, path, timeInterval, depthInterval, valueInterval):
         """read some variables and return an open file handle,
            based on data selection.
         """
-        data = nc.Dataset(path)
+        data = netCDF4.Dataset(path)
 
         # TODO: slicing in time!
-        if 'time' in nc.Dataset(path).variables:
+        if 'time' in netCDF4.Dataset(path).variables:
             t = data['time'][:]
-        elif 'date_time' in nc.Dataset(path).variables:
+        elif 'date_time' in netCDF4.Dataset(path).variables:
             chnc = int(1e5)
-            t0 = nc.date2num ( datetime.strptime(timeInterval[0],'%Y-%m-%d') , data['date_time'].units)
-            t1 = nc.date2num ( datetime.strptime(timeInterval[1],'%Y-%m-%d') , data['date_time'].units)
+            t0 = netCDF4.date2num ( datetime.strptime(timeInterval[0],'%Y-%m-%d') , data['date_time'].units)
+            t1 = netCDF4.date2num ( datetime.strptime(timeInterval[1],'%Y-%m-%d') , data['date_time'].units)
             isInDate = np.logical_and(data.variables['date_time'][:] > t0, data.variables['date_time'][:] < t1).data
             t = np.empty(len(data.variables['date_time'][isInDate]),dtype=type(datetime.now()))
             if len(data['date_time'][isInDate]) > chnc: # big
                 # split nans and notnans makes it much faster
                 dtf = np.where( data['date_time'][isInDate].mask==False )
                 dtt = np.where( data['date_time'][isInDate].mask==True )
-                t[dtf] = nc.num2date( data['date_time'][isInDate][dtf], data['date_time'].units)
-                t[dtt] = nc.num2date( data['date_time'][isInDate][dtt], data['date_time'].units)
-                
+                t[dtf] = netCDF4.num2date( data['date_time'][isInDate][dtf], data['date_time'].units)
+                t[dtt] = netCDF4.num2date( data['date_time'][isInDate][dtt], data['date_time'].units)
+
             else:
                 t = data['date_time'][isInDate]
-                
-        # TODO: slicing through Depth... Hard with this sort of unstructured netcdf. 
+
+        # TODO: slicing through Depth... Hard with this sort of unstructured netcdf.
         if data['var1'].long_name == "Depth":
             depth = None
         else:
             depth = None
 
-        if 'lat' in nc.Dataset(path).variables:
+        if 'lat' in netCDF4.Dataset(path).variables:
             lat = data['lat'][isInDate]
-        elif 'latitude' in nc.Dataset(path).variables:
+        elif 'latitude' in netCDF4.Dataset(path).variables:
             lat = data['latitude'][isInDate]
-        if 'lon' in nc.Dataset(path).variables:
+        if 'lon' in netCDF4.Dataset(path).variables:
             lon = data['lon'][isInDate]
-        elif 'longitude' in nc.Dataset(path).variables:
+        elif 'longitude' in netCDF4.Dataset(path).variables:
             lon = data['longitude'][isInDate]
-            
+
         return {
             "grids": {
                 "lat": lat,
@@ -192,16 +192,16 @@ class ODV:
             },
             "trajectories": [],
             "profiles": []
-            
+
         }
-    
+
     def read_nc(self, path, timeInterval, depthInterval, valueInterval):
         if timeInterval == depthInterval == valueInterval == []:
             data = self.read_nc_all(path)
         else:
             data = self.read_nc_slice(path, timeInterval, depthInterval, valueInterval)
         return data
-    
+
     def extract_tar(self, path):
         """extract tar file"""
         with tarfile.open(path, "r:gz") as tar:
@@ -325,3 +325,9 @@ class ODV:
         script, div = bokeh.embed.components(p)
         bokeh.plotting.show(p)
         return script, div
+
+
+def load_dataset(filename):
+    path = pathlib.Path(filename).expanduser()
+    ds = netCDF4.Dataset(path)
+    return ds
