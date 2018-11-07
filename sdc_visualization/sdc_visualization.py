@@ -51,6 +51,11 @@ class ODV:
             self.trajectories.append(data['trajectories'])
             self.profiles.append(data['profiles'])
 
+    def load_dataset(self, filename):
+        path = pathlib.Path(filename).expanduser()
+        ds = netCDF4.Dataset(path)
+        return ds
+
     def read_txt(self, path):
         """unpack an ODV tar file"""
         data = pd.read_csv(
@@ -331,3 +336,56 @@ def load_dataset(filename):
     path = pathlib.Path(filename).expanduser()
     ds = netCDF4.Dataset(path)
     return ds
+
+    def read_nc_slice(self, path, timeInterval, depthInterval, valueInterval):
+        """read some variables and return an open file handle,
+           based on data selection.
+        """
+        data = netCDF4.Dataset(path)
+
+        # TODO: slicing in time!
+        if 'time' in netCDF4.Dataset(path).variables:
+            t = data['time'][:]
+        elif 'date_time' in netCDF4.Dataset(path).variables:
+            chnc = int(1e5)
+            t0 = netCDF4.date2num ( datetime.strptime(timeInterval[0],'%Y-%m-%d') , data['date_time'].units)
+            t1 = netCDF4.date2num ( datetime.strptime(timeInterval[1],'%Y-%m-%d') , data['date_time'].units)
+            isInDate = np.logical_and(data.variables['date_time'][:] > t0, data.variables['date_time'][:] < t1).data
+            t = np.empty(len(data.variables['date_time'][isInDate]),dtype=type(datetime.now()))
+            if len(data['date_time'][isInDate]) > chnc: # big
+                # split nans and notnans makes it much faster
+                dtf = np.where( data['date_time'][isInDate].mask==False )
+                dtt = np.where( data['date_time'][isInDate].mask==True )
+                t[dtf] = netCDF4.num2date( data['date_time'][isInDate][dtf], data['date_time'].units)
+                t[dtt] = netCDF4.num2date( data['date_time'][isInDate][dtt], data['date_time'].units)
+
+            else:
+                t = data['date_time'][isInDate]
+
+        # TODO: slicing through Depth... Hard with this sort of unstructured netcdf.
+        if data['var1'].long_name == "Depth":
+            depth = None
+        else:
+            depth = None
+
+        if 'lat' in netCDF4.Dataset(path).variables:
+            lat = data['lat'][isInDate]
+        elif 'latitude' in netCDF4.Dataset(path).variables:
+            lat = data['latitude'][isInDate]
+        if 'lon' in netCDF4.Dataset(path).variables:
+            lon = data['lon'][isInDate]
+        elif 'longitude' in netCDF4.Dataset(path).variables:
+            lon = data['longitude'][isInDate]
+
+        return {
+            "grids": {
+                "lat": lat,
+                "lon": lon,
+                "time": t,
+                "depth": depth,
+                "nc_file": data
+            },
+            "trajectories": [],
+            "profiles": []
+
+        }
