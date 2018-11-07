@@ -18,6 +18,15 @@ def dataset():
     resp = list(current_app.ds.variables.keys())
     return jsonify(resp)
 
+@blueprint.route('/api/dataset_slice', methods=['POST'])
+def dataset_slice():
+    """Return dataset content."""
+    # get the dataset from the current app
+    year = request.form['year']
+    depth = reques.form['year']
+    # resp = list(current_app.ds.variables.keys())
+    return jsonify(resp)
+
 def create_app(ds):
     """Create an app."""
 
