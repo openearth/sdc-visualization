@@ -1,8 +1,10 @@
 """Create a visualization server."""
 
-from flask import Blueprint, Flask, jsonify, current_app
+from flask import Blueprint, Flask, jsonify, current_app, request
 from flask_cors import CORS
 
+
+import datetime
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
 
@@ -18,13 +20,14 @@ def dataset():
     resp = list(current_app.ds.variables.keys())
     return jsonify(resp)
 
-@blueprint.route('/api/dataset_slice', methods=['POST'])
+@blueprint.route('/api/slice', methods=['GET', 'POST'])
 def dataset_slice():
     """Return dataset content."""
     # get the dataset from the current app
-    year = request.form['year']
-    depth = reques.form['year']
-    # resp = list(current_app.ds.variables.keys())
+    year = int(request.values.get('year', datetime.datetime.now().year))
+    print(request.form)
+    depth = int(request.values.get('depth', 0))
+    resp = [year, depth]
     return jsonify(resp)
 
 def create_app(ds):
