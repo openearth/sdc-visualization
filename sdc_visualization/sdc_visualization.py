@@ -46,7 +46,7 @@ class ODV:
                 self.extract_tar(path)
                 data = self.read_txt(path.with_suffix('.txt'))
             elif (path.suffix in ('.nc')):
-                data = self.read_nc(path, timeInterval, depthInterval,valueInterval)
+                data = self.read_nc(path, timeInterval, depthInterval, valueInterval)
             self.grids.append(data['grids'])
             self.trajectories.append(data['trajectories'])
             self.profiles.append(data['profiles'])
