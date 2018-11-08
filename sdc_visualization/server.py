@@ -24,6 +24,30 @@ def dataset():
     resp = list(current_app.ds.variables.keys())
     return jsonify(resp)
 
+@blueprint.route('/api/extent', methods=['GET', 'POST'])
+def extent():
+    """Return dataset extent."""
+    # get the dataset from the current app
+    data = current_app.ds
+
+    # ensure that our array is always masked
+    date_time = np.ma.masked_array(
+        data.variables['date_time'][:]
+    )
+    
+    t_ini = netCDF4.num2date(
+        np.min(date_time[:]),
+        data.variables['date_time'].units
+    )
+    t_fin = netCDF4.num2date(
+        np.max(date_time[:]),
+        data.variables['date_time'].units
+    )
+    
+    resp = [t_ini.year, t_fin.year]
+    
+    return jsonify(resp)
+
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 def dataset_slice():
     """Return dataset content."""
@@ -39,7 +63,7 @@ def dataset_slice():
     """
     data = current_app.ds
 
-    # TODO: slicing in time!
+    # slicing in time!
     t0 = netCDF4.date2num(
         datetime.datetime(year=year, month=1, day=1),
         data.variables['date_time'].units
