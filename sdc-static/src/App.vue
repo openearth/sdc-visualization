@@ -8,7 +8,6 @@
         <v-time-slider
           ref="timeslider"
           show-play
-          fixedHandles
           interval="years"
           >
         </v-time-slider>

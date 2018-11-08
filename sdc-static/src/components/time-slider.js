@@ -86,11 +86,12 @@ export default {
 
         grid: false,
         hide_min_max: true,
-        // onFinish: (val) => {
-        //   this.$emit('time-interval-update', this.currentExtent)
-        // },
         onUpdate: (val) => {
-          console.log('update', val)
+          console.log('onUpdate', val)
+          this.$emit('time-extent-update', val)
+        },
+        onChange: (val) => {
+          console.log('onChange', val)
           this.$emit('time-extent-update', val)
         },
         prettify: function (num) {
@@ -130,7 +131,7 @@ export default {
         return;
       }
       // elapsed time in seconds
-      const elapsed = (now - this.last)/1000;
+      const elapsed = (now - this.last)/3000;
       // seconds per frame did not elapse, we're done
       if (elapsed < (1/this.maxFps)) {
         // this keeps the number of events low (otherwise you get 60 events per second)

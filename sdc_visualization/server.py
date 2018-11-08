@@ -1,6 +1,7 @@
 """Create a visualization server."""
 
 import datetime
+import time
 
 import netCDF4
 import numpy as np
@@ -12,6 +13,10 @@ from flask_cors import CORS
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
 
+def antimeridian_cut(lon):
+    """longitudes > 180 -> -360"""
+    return np.mod(np.array(lon) + 180, 360)  - 180
+
 @blueprint.route('/', methods=['GET', 'POST'])
 def home():
     """Home page."""
@@ -19,9 +24,35 @@ def home():
 
 @blueprint.route('/api/dataset', methods=['GET', 'POST'])
 def dataset():
-    """Return dataset content."""
+    """Return dataset metadata."""
     # get the dataset from the current app
-    resp = list(current_app.ds.variables.keys())
+    ds = current_app.ds
+    date_nums = ds.variables['date_time'][:]
+
+    def ensure_datetime(maybe_datetime):
+        """sometimes < 1582 we get netCDF4 datetimes"""
+        timetuple = maybe_datetime.timetuple()
+        timestamp = time.mktime(timetuple)
+        date = datetime.datetime.fromtimestamp(
+            timestamp
+        )
+        return date
+
+    times = netCDF4.num2date(
+        [
+            date_nums.min(),
+            date_nums.max()
+        ],
+        ds.variables['date_time'].units
+    )
+
+    resp = {
+        "variables": list(ds.variables.keys()),
+        "time_extent": [
+            ensure_datetime(times[0]).isoformat(),
+            ensure_datetime(times[-1]).isoformat()
+        ]
+    }
     return jsonify(resp)
 
 @blueprint.route('/api/extent', methods=['GET', 'POST'])
@@ -53,7 +84,6 @@ def dataset_slice():
     """Return dataset content."""
     # get the dataset from the current app
     year = int(request.values.get('year', datetime.datetime.now().year))
-    print(request.form)
     depth = int(request.values.get('depth', 0))
 
 
@@ -116,20 +146,11 @@ def dataset_slice():
     elif 'longitude' in data.variables:
         lon = data['longitude'][is_in_date]
 
-    resp = {
-        "grids": {
-            "lat": lat,
-            "lon": lon,
-            "time": t,
-            "depth": depth,
-            "nc_file": data
-        },
-        "trajectories": [],
-        "profiles": []
-
-    }
     geometry = geojson.MultiPoint(
-        np.c_[lon, lat].tolist()
+        np.c_[
+            antimeridian_cut(lon),
+            lat
+        ].tolist()
     )
     feature = geojson.Feature(
         geometry=geometry,
