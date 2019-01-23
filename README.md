@@ -27,6 +27,11 @@ Visualizations of ODV files for SeaDataCloud
 ## mount b2drop in the running Docker container, if needed
 `docker exec -it deltares-jupyter bash /etc/init.d/mount-b2drop <B2DROP_APP_USERNAME> <B2DROP_APP_PASSWORD> https://b2drop.eudat.eu/remote.php/webdav/`
 
+## Installation
+`python setup.py install`
+`conda install pillow`
+`conda install datetime`
+
 ## Run the visualization app using the dataset.nc
 Start the server
 `
