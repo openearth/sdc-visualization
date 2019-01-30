@@ -7,7 +7,8 @@ export default {
     return {
       graph: null,
       graphdaterange: null,
-      option: null
+      option: null,
+      items: ['Temperature', 'Salinity']
     }
   },
   props: {
@@ -38,9 +39,14 @@ export default {
     }
   },
   mounted() {
+    this.getVariables()
     this.createGraph("Trajectory")
+
   },
   methods: {
+    getVariables() {
+
+    },
     createGraph(type){
       var dom = document.getElementById("chart-container")
       this.graph = echarts.init(dom)

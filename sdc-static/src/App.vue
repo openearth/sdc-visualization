@@ -6,13 +6,17 @@
     </div> -->
     <v-navigation-drawer mini-variant id="menudrawer" hide-overlay app v-model="menudrawer">
     </v-navigation-drawer>
-    <v-navigation-drawer right id="plotdrawer" hide-overlay app v-model="plotdrawer">
+    <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
       <chart-component :daterange="daterange">
       </chart-component>
     </v-navigation-drawer>
     <v-toolbar height="64px" fixed>
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-toolbar-title>SeaDataCloud</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon @click.stop="plotdrawer = !plotdrawer">
+        <v-icon>show_chart</v-icon>
+      </v-btn>
     </v-toolbar>
     <div id="t-slider">
         <v-time-slider
@@ -47,7 +51,7 @@ html, body {
   height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-y: hidden !important;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
