@@ -9,6 +9,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "echarts": "^4.2.0-rc.2",
     "font-awesome": "^4.7.0",
     "ion-rangeslider": "^2.2.0",
     "mapbox-gl": "^0.50.0",

@@ -4,6 +4,16 @@
       <v-depth-slider>
       </v-depth-slider>
     </div> -->
+    <v-navigation-drawer mini-variant id="menudrawer" hide-overlay app v-model="menudrawer">
+    </v-navigation-drawer>
+    <v-navigation-drawer right id="plotdrawer" hide-overlay app v-model="plotdrawer">
+      <chart-component :daterange="daterange">
+      </chart-component>
+    </v-navigation-drawer>
+    <v-toolbar height="64px" fixed>
+      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      <v-toolbar-title>SeaDataCloud</v-toolbar-title>
+    </v-toolbar>
     <div id="t-slider">
         <v-time-slider
           ref="timeslider"
@@ -37,8 +47,8 @@ html, body {
   height: 100vh;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
-
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -47,8 +57,8 @@ html, body {
   width: 100%;
   height: 100%;
 }
-
 #map {
+  top: 64px;
   width: 100%;
   height: 100%;
 }
@@ -61,12 +71,11 @@ html, body {
   right: 80vw;
 }
 
-#d-slider{
-  /* position: absolute; */
-  left: 50vw;
-  bottom: 50vh;
-  width: 500px;
-  height: 500px;
-  transform: rotate(90deg);
+#menudrawer, #plotdrawer {
+  top: 64px;
+  z-index: 1;
+  overflow-y: overlay;
+  max-height: calc(100% - 64px);
 }
+
 </style>

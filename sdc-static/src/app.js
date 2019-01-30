@@ -1,24 +1,29 @@
 import TimeSlider from './components/TimeSlider'
 import DepthSlider from './components/DepthSlider'
 import moment from 'moment'
+import ChartComponent from './components/ChartComponent'
 
 export default {
   name: 'app',
   components: {
     "v-time-slider": TimeSlider,
-    "v-depth-slider": DepthSlider
+    "v-depth-slider": DepthSlider,
+    "chart-component": ChartComponent
   },
   data () {
     return {
+      menudrawer: false,
+      plotdrawer: true,
       map: null,
       end: 2017,
-      begin: 1986
+      begin: 1986,
+      daterange: []
     }
   },
   mounted() {
     this.$refs.timeslider.$on('time-extent-update', (event) => {
-      console.log('time-extent-update', event)
-      this.showLayer(event.from_pretty, event.to_pretty)
+      this.daterange = [event.from_pretty, event.to_pretty]
+      // this./showLayer(event.from_pretty, event.to_pretty)
     })
     // fetch(SERVER_URL + '/map/satellite/times/', {
     //     method: "GET"
@@ -34,6 +39,7 @@ export default {
     this.map = this.$refs.map.map
     this.map.on('load', () => {
       // this.addLayers()
+      console.log('loaded')
       this.loadLayers()
     })
     console.log(this, this.$refs)
