@@ -2,6 +2,8 @@
 node_modules
 /dist
 
+src/views/user.json
+
 # local env files
 .env.local
 .env.*.local
