@@ -1,6 +1,5 @@
-import TimeSlider from './components/TimeSlider'
-import DepthSlider from './components/DepthSlider'
-import moment from 'moment'
+import TimeSlider from '@/components/TimeSlider'
+import DepthSlider from '@/components/DepthSlider'
 
 export default {
   name: 'app',
