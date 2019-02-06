@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install davfs2 --yes
 
 
-COPY dist /usr/share/nginx/html
+COPY sdc-static/dist /usr/share/nginx/html
 
 # Expose http port
 EXPOSE 80
