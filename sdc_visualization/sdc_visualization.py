@@ -332,11 +332,6 @@ class ODV:
         return script, div
 
 
-def load_dataset(filename):
-    path = pathlib.Path(filename).expanduser()
-    ds = netCDF4.Dataset(path)
-    return ds
-
     def read_nc_slice(self, path, timeInterval, depthInterval, valueInterval):
         """read some variables and return an open file handle,
            based on data selection.
