@@ -9,6 +9,8 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "bootstrap": "^4.2.1",
+    "bootstrap-vue": "^2.0.0-rc.11",
     "font-awesome": "^4.7.0",
     "ion-rangeslider": "^2.2.0",
     "mapbox-gl": "^0.50.0",
