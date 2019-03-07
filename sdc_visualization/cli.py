@@ -4,7 +4,6 @@ import sys
 import click
 
 from sdc_visualization.server import create_app
-from sdc_visualization import load_dataset
 
 @click.group()
 def cli():
@@ -20,11 +19,9 @@ def main(args=None):
 
 @cli.command()
 @click.option('--debug', default=False, help='Use debug mode.', is_flag=True)
-@click.argument('dataset')
-def serve(debug, dataset, args=None):
+def serve(debug, args=None):
     """Serve sea-data cloud visualisations"""
-    ds = load_dataset(dataset)
-    app = create_app(ds)
+    app = create_app()
     if debug:
         kwargs = dict(debug=True, use_reloader=False)
     else:

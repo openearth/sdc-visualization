@@ -10,11 +10,14 @@
   },
   "dependencies": {
     "echarts": "^4.2.0-rc.2",
+    "bootstrap": "^4.2.1",
+    "bootstrap-vue": "^2.0.0-rc.11",
     "font-awesome": "^4.7.0",
     "ion-rangeslider": "^2.2.0",
     "mapbox-gl": "^0.50.0",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "vue": "^2.5.17",
+    "vue-router": "^3.0.2",
     "vue2mapbox-gl": "^0.4.50",
     "vuetify": "^1.3.2",
     "vuex": "^3.0.1"

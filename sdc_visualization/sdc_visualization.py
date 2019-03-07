@@ -46,7 +46,7 @@ class ODV:
                 self.extract_tar(path)
                 data = self.read_txt(path.with_suffix('.txt'))
             elif (path.suffix in ('.nc')):
-                data = self.read_nc(path, timeInterval, depthInterval,valueInterval)
+                data = self.read_nc(path, timeInterval, depthInterval, valueInterval)
             self.grids.append(data['grids'])
             self.trajectories.append(data['trajectories'])
             self.profiles.append(data['profiles'])
@@ -331,11 +331,6 @@ class ODV:
         bokeh.plotting.show(p)
         return script, div
 
-
-def load_dataset(filename):
-    path = pathlib.Path(filename).expanduser()
-    ds = netCDF4.Dataset(path)
-    return ds
 
     def read_nc_slice(self, path, timeInterval, depthInterval, valueInterval):
         """read some variables and return an open file handle,
