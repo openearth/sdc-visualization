@@ -8,24 +8,26 @@ import numpy as np
 import geojson
 
 from flask import Blueprint, Flask, jsonify, current_app, request, g
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
 
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
-
+CORS(blueprint)
 
 def antimeridian_cut(lon):
     """longitudes > 180 -> -360"""
     return np.mod(np.array(lon) + 180, 360)  - 180
 
 @blueprint.route('/', methods=['GET', 'POST'])
+@cross_origin()
 def home():
     """Home page."""
     return 'home'
 
 @blueprint.route('/api/dataset', methods=['GET', 'POST'])
+@cross_origin()
 def dataset():
     """Return dataset metadata."""
     # get the dataset from the current app
@@ -67,6 +69,7 @@ def dataset():
     return jsonify(resp)
 
 @blueprint.route('/api/extent', methods=['GET', 'POST'])
+@cross_origin()
 def extent():
     """Return dataset extent."""
     # get the dataset from the current app
@@ -91,6 +94,7 @@ def extent():
     return jsonify(resp)
 
 @blueprint.route('/api/load', methods=['POST'])
+@cross_origin()
 def load():
     # TODO: validate filename further, otherwise we might load any file
     req_data = request.get_json()
@@ -106,6 +110,7 @@ def load():
     return jsonify(resp)
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
+@cross_origin()
 def dataset_slice():
     """Return dataset content."""
     # get the dataset from the current app

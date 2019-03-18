@@ -12,8 +12,15 @@
     <div>
         <button @click="load('~/data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file</button>
     </div>
+    <div>
+        <button @click="load('D:/sdc-visualization/data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file in relative path</button>
+    </div>
 </div>
 </template>
+
+<script>
+</script>
+
 <style>
 #file-selector {
     width: 100vw;
@@ -23,7 +30,10 @@
 <script>
 import _ from 'lodash'
 import user from './user.json'
+import store from '@/store.js'
+
 export default {
+  store,
     mounted () {
         const iframe = document.getElementById('file-selector')
 
@@ -51,8 +61,8 @@ export default {
             }
             // names are in here
             let names = message.data.dataid
-
-            const b2dropPath = '~/data/odv'
+            console.log(names)
+            const b2dropPath = this.b2drop.url
             // remove the php part inline
             names = _.map(
                 names,
@@ -65,8 +75,9 @@ export default {
             this.$router.push({name: 'home'})
         },
         load(filename) {
-            const url = 'http://localhost:5000/api/load'
+            const url = `${store.state.serverUrl}/api/load`
             const body = { filename }
+            console.log('filename', filename)
             return fetch(url, {
                 method: 'POST',
                 mode: 'cors',

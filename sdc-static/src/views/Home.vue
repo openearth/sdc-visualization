@@ -33,7 +33,7 @@
             <p class="card-text">
                 Create visualizations on the map
             </p>
-            <b-button href="#/home" variant="primary">Go</b-button>
+            <b-button href="#/map" variant="primary">Go</b-button>
         </b-card>
 
         <b-card title="Credentials"
@@ -55,6 +55,13 @@
   max-width: 20rem;
 }
 .action img {
-    max-height: 30rem;
+  max-height: 30rem;
+}
+
+.row {
+  width: 100vw;
+  padding: auto;
+  margin: auto;
+  margin-top: 40px;
 }
 </style>
