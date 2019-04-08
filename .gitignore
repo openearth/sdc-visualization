@@ -1,6 +1,6 @@
 # Images/movies
-*.png
-*.mp4
+data/*.png
+data/*.mp4
 
 # Data
 data/*.nc
