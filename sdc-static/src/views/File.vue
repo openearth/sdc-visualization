@@ -4,8 +4,8 @@
     <iframe id="file-selector" name="file-selector"></iframe>
     <!-- put all form elements in a form from which the result is loaded in the iframe above -->
     <form id="file-selector-form" action="https://webodv.seadatacloud.ml/file_selector" method="post" target="file-selector">
-        <input type="hidden" name="b2drop_username" :value="user.name">
-        <input type="hidden" name="b2drop_password" :value="user.password">
+        <input type="hidden" name="b2drop_username" :value="username">
+        <input type="hidden" name="b2drop_password" :value="password">
         <input type="hidden" name="b2drop_url" :value="b2drop.url">
     </form>
     <!-- for testing, load a local file -->
@@ -22,7 +22,6 @@
 </style>
 <script>
 import _ from 'lodash'
-import user from './user.json'
 export default {
     mounted () {
         const iframe = document.getElementById('file-selector')
@@ -35,9 +34,17 @@ export default {
         console.log('iframe', iframe, form)
         form.submit()
     },
+    computed: {
+        form () { return document.getElementById('file-selector-form') },
+        username () { return this.$store.state.credentials.username },
+        password () { return this.$store.state.credentials.password }
+    },
+    watch: {
+        username () { this.form.submit() },
+        password () { this.form.submit() }
+    },
     data () {
         return {
-            user,
             b2drop: {
                 url: 'https://b2drop.eudat.eu/remote.php/webdav/'
             }
