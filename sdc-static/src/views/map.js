@@ -20,7 +20,11 @@ export default {
       end: 2017,
       begin: 1986,
       daterange: [],
-      timerange: []
+      timerange: [],
+      items: [
+  { title: 'Home', icon: 'dashboard' },
+  { title: 'About', icon: 'question_answer' }
+],
     }
   },
   mounted() {
@@ -32,7 +36,7 @@ export default {
     this.map = this.$refs.map.map
     this.map.on('load', () => {
       console.log('loaded')
-      // this.loadLayers()
+      this.loadLayers()
       // this.loadMaplayers()
       this.map.on('click', () => {
         console.log('click')

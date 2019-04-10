@@ -10,17 +10,10 @@
     </form>
     <!-- for testing, load a local file -->
     <div>
-        <button @click="load('~/data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file</button>
-    </div>
-    <div>
-        <button @click="load('D:/sdc-visualization/data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file in relative path</button>
+        <button @click="load('./data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file</button>
     </div>
 </div>
 </template>
-
-<script>
-</script>
-
 <style>
 #file-selector {
     width: 100vw;
@@ -30,10 +23,7 @@
 <script>
 import _ from 'lodash'
 import user from './user.json'
-import store from '@/store.js'
-
 export default {
-  store,
     mounted () {
         const iframe = document.getElementById('file-selector')
 
@@ -61,8 +51,8 @@ export default {
             }
             // names are in here
             let names = message.data.dataid
-            console.log(names)
-            const b2dropPath = this.b2drop.url
+
+            const b2dropPath = '~/data/odv'
             // remove the php part inline
             names = _.map(
                 names,
@@ -75,9 +65,8 @@ export default {
             this.$router.push({name: 'home'})
         },
         load(filename) {
-            const url = `${store.state.serverUrl}/api/load`
+            const url = `http://localhost:5000/api/load`
             const body = { filename }
-            console.log('filename', filename)
             return fetch(url, {
                 method: 'POST',
                 mode: 'cors',
@@ -88,7 +77,12 @@ export default {
                 referrer: 'no-referrer', // no-referrer, *client
                 body: JSON.stringify(body), // body data type must match 'Content-Type' header
             })
-                .then(response => response.json()); // parses response to JSON            fetch(server, )
+                .then(response => {
+                    const result = response.json()
+                    console.log(result)
+                    this.$router.push({name: 'home'})
+                    return result
+                } ); // parses response to JSON            fetch(server, )
         }
     }
 }
