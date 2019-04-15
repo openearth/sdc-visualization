@@ -15,7 +15,7 @@
 <script src="./depth-slider.js"></script>
 
 
-<style>
+<style scoped>
 @import '~ion-rangeslider/css/ion.rangeSlider.css';
 @import '~ion-rangeslider/css/ion.rangeSlider.skinHTML5.css';
 @import '~font-awesome/css/font-awesome.css';

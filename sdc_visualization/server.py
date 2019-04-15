@@ -8,24 +8,29 @@ import numpy as np
 import geojson
 
 from flask import Blueprint, Flask, jsonify, current_app, request, g
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
 
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
+CORS(blueprint)
 
 
 def antimeridian_cut(lon):
     """longitudes > 180 -> -360"""
-    return np.mod(np.array(lon) + 180, 360)  - 180
+    return np.mod(np.array(lon) + 180, 360) - 180
+
 
 @blueprint.route('/', methods=['GET', 'POST'])
+@cross_origin()
 def home():
     """Home page."""
     return 'home'
 
+
 @blueprint.route('/api/dataset', methods=['GET', 'POST'])
+@cross_origin()
 def dataset():
     """Return dataset metadata."""
     # get the dataset from the current app
@@ -38,7 +43,6 @@ def dataset():
     # this can be a bit slow
     date_nums = ds.variables['date_time'][:]
 
-
     def ensure_datetime(maybe_datetime):
         """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
 
@@ -48,13 +52,17 @@ def dataset():
             date = maybe_datetime
 
         return date
-
-
+    print(ds.variables['date_time'])
     # if we have an actual range, use that
-    times = netCDF4.num2date(
-        ds.variables['date_time'].valid_range,
-        ds.variables['date_time'].units
-    )
+    try:
+        times = netCDF4.num2date(
+            ds.variables['date_time'].valid_range,
+            ds.variables['date_time'].units
+        )
+    except AttributeError:
+        times = [ds.variables['date_time'].min(), ds.variables['date_time'].max()]
+
+    print(times)
 
     resp = {
         "name": ds.filepath(),
@@ -66,31 +74,39 @@ def dataset():
     }
     return jsonify(resp)
 
+
 @blueprint.route('/api/extent', methods=['GET', 'POST'])
+@cross_origin()
 def extent():
     """Return dataset extent."""
     # get the dataset from the current app
-    data = current_app.ds
+    ds = get_ds()
+    if ds is None:
+        return jsonify({
+            'error': 'data not loaded'
+        })
 
     # ensure that our array is always masked
     date_time = np.ma.masked_array(
-        data.variables['date_time'][:]
+        ds.variables['date_time'][:]
     )
 
     t_ini = netCDF4.num2date(
         np.min(date_time[:]),
-        data.variables['date_time'].units
+        ds.variables['date_time'].units
     )
     t_fin = netCDF4.num2date(
         np.max(date_time[:]),
-        data.variables['date_time'].units
+        ds.variables['date_time'].units
     )
 
     resp = [t_ini.year, t_fin.year]
 
     return jsonify(resp)
 
+
 @blueprint.route('/api/load', methods=['POST'])
+@cross_origin()
 def load():
     # TODO: validate filename further, otherwise we might load any file
     req_data = request.get_json()
@@ -105,13 +121,14 @@ def load():
     resp["loaded"] = True
     return jsonify(resp)
 
+
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
+@cross_origin()
 def dataset_slice():
     """Return dataset content."""
     # get the dataset from the current app
     year = int(request.values.get('year', datetime.datetime.now().year))
     depth = int(request.values.get('depth', 0))
-
 
     """
     read some variables and return an open file handle,
@@ -122,7 +139,6 @@ def dataset_slice():
         return jsonify({
             'error': 'data not loaded'
         })
-
 
     # slicing in time!
     t0 = netCDF4.date2num(
@@ -187,6 +203,7 @@ def dataset_slice():
         properties={}
     )
     return jsonify(feature)
+
 
 def create_app():
     """Create an app."""
