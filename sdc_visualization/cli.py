@@ -25,7 +25,7 @@ def serve(debug, args=None):
     if debug:
         kwargs = dict(debug=True, use_reloader=False)
     else:
-        kwargs ={}
+        kwargs ={"host": "0.0.0.0"}
     app.run(**kwargs)
 
 
