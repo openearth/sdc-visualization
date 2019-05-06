@@ -14,9 +14,19 @@ export default {
   props: {
     daterange: {
       type: Array
+    },
+    graphData: {
+      type: Object
     }
   },
   watch: {
+      graphData: {
+          handler: function(graphData) {
+              this.option.series[0].data = graphData.data
+              this.option.xAxis.data = graphData.time
+              this.graph.setOption(this.option)
+          }
+      },
     // Watch "layers". This is a switch, which can toggle a layer on or off
     // When toggled, this watcher will activate the toggleLayers function.
     daterange: {
@@ -32,7 +42,6 @@ export default {
             }]]
         }
 
-        console.log(this.option)
         this.graph.setOption(this.option)
       },
       deep: true
@@ -60,7 +69,7 @@ export default {
           },
           xAxis: {
             type: 'category',
-            data: [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]
+            data: this.graphData.time
           },
           yAxis: {
             type: 'value'
@@ -68,7 +77,7 @@ export default {
           series: [
               {
                   type:'line',
-                  data: [300, 280, 250, 260, 270, 300, 550, 500, 400, 390, 380, 390, 400, 500, 600, 750, 800, 700, 600, 400],
+                  data: this.graphData.data,
                   markArea: {
                       data: [[{
                           xAxis: this.daterange[0]

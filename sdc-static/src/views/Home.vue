@@ -40,7 +40,7 @@
                     <p class="card-text">
                         Create visualizations on the map
                     </p>
-                    <b-button href="#/map" variant="primary" :disabled="!$store.state.credentials">Go</b-button>
+                    <b-button href="#/visualization" variant="primary" :disabled="!$store.state.credentials">Go</b-button>
                 </b-card>
             </b-col>
             <b-col sm="auto" cols="3">

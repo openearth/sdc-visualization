@@ -70,7 +70,6 @@ export default {
     };
   },
   mounted() {
-    console.log(this.startDate, this.endDate, day_format)
     Vue.nextTick(() => {
       let input = this.$el.querySelector("input.slider");
       $(input).ionRangeSlider({
@@ -87,11 +86,9 @@ export default {
         grid: false,
         hide_min_max: true,
         onUpdate: (val) => {
-          console.log('onUpdate', val)
           this.$emit('time-extent-update', val)
         },
         onChange: (val) => {
-          console.log('onChange', val)
           this.$emit('time-extent-update', val)
         },
         prettify: function (num) {
