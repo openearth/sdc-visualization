@@ -122,6 +122,41 @@ def load():
     return jsonify(resp)
 
 
+@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
+@cross_origin()
+def get_timeseries():
+    """Return timeseries for point data"""
+    lon_e = float(request.values.get("lon", 0))
+    lat_e = float(request.values.get("lat", 0))
+
+    """
+    read some variables and return an open file handle,
+    based on data selection.
+    """
+    ds = get_ds()
+    if ds is None:
+        return jsonify({
+            'error': 'data not loaded'
+        })
+
+    if 'lat' in ds.variables:
+        lat = ds['lat'][:]
+    elif 'latitude' in ds.variables:
+        lat = ds['latitude'][:]
+    if 'lon' in ds.variables:
+        lon = ds['lon'][:]
+    elif 'longitude' in ds.variables:
+        lon = ds['longitude'][:]
+
+    ind = np.argmin( np.abs(np.sqrt((lat - lat_e)**2 + (lon - lon_e)**2)))
+
+    data = ds.variables['var2'][ind][:].data
+    timeseries = dict({
+        "time": np.arange(10).tolist() ,
+        "data": np.arange(10).tolist()
+    })
+    return jsonify(timeseries)
+
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 @cross_origin()
 def dataset_slice():
@@ -129,7 +164,6 @@ def dataset_slice():
     # get the dataset from the current app
     year = int(request.values.get('year', datetime.datetime.now().year))
     depth = int(request.values.get('depth', 0))
-
     """
     read some variables and return an open file handle,
     based on data selection.
@@ -204,6 +238,11 @@ def dataset_slice():
     )
     return jsonify(feature)
 
+
+
+#TODO: Need a request to get all variables back
+# def get_variables():
+#     return ds.variables
 
 def create_app():
     """Create an app."""
