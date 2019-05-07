@@ -46,7 +46,7 @@ export default {
     data () {
         return {
             b2drop: {
-                url: 'https://b2drop.eudat.eu/remote.php/webdav/'
+                url: 'https://nc.seadatacloud.ml/remote.php/webdav'
             }
         }
     },

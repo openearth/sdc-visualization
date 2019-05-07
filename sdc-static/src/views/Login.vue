@@ -30,6 +30,17 @@
                     >
                 </b-form-input>
             </b-form-group>
+            <b-form-group id="input-group-3" label="b2drop url:" label-for="b2drop_url">
+                <b-form-input
+                    id="b2drop_url"
+                    v-model="form.url"
+                    type="text"
+                    required
+                    :state="!$v.form.url.$invalid"
+                    placeholder="Enter url"
+                    >
+                </b-form-input>
+            </b-form-group>
 
             <b-button type="submit" variant="primary">Submit</b-button>
         </b-form>
@@ -52,7 +63,8 @@ export default {
         return {
             form: {
                 username: '',
-                password: ''
+                password: '',
+                url: ''
             },
             show: true
         }
@@ -60,12 +72,14 @@ export default {
     validations: {
         form: {
             username: {
-                required,
-                uuid: uuid
+                required
             },
             password: {
                 required,
                 between: minLength(4)
+            },
+            url: {
+                required
             }
         }
     },
