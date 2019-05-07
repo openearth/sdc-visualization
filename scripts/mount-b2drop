@@ -1,31 +1,29 @@
 #!/bin/sh
-export B2DROP_USER=$1
-export B2DROP_PASSWORD=$2
-export WEBDAV_URL=$3
-
 # print ENV variables
-echo "User is $B2DROP_USER"
 echo "URL is $WEBDAV_URL"
 
-if [ -z "${B2DROP_USER}" ];
+if [ -z "${WEBDAV_USERNAME}" ];
 then
-    echo "B2DROP_USER is unset or set to the empty string"
+    echo "WEBDAV_USERNAME is unset or set to the empty string"
 fi
 
-if [ -z "${B2DROP_PASSWORD}" ];
+if [ -z "${WEBDAV_PASSWORD}" ];
 then
-    echo "B2DROP_PASSWORD is unset or set to the empty string"
+    echo "WEBDAV_PASSWORD is unset or set to the empty string"
 fi
 
 
-if [ ! -z "${B2DROP_USER}" -a ! -z "${B2DROP_PASSWORD}" ];
+if [ ! -z "${WEBDAV_USERNAME}" -a ! -z "${WEBDAV_PASSWORD}" ];
 then
     # Create entry in secrets file
-    echo "$WEBDAV_URL $B2DROP_USER $B2DROP_PASSWORD" >> /etc/davfs2/secrets
+    echo "$WEBDAV_URL $WEBDAV_USERNAME $WEBDAV_PASSWORD" >> /etc/davfs2/secrets
 
     # make dir for mount
     mkdir -p ~/work/b2drop
 
+    # make sure /etc/mtab exists
+    touch /etc/mtab
+
     # mount b2drop to dir
-    mount.davfs $WEBDAV_URL ~/work/b2drop
+    mount -t davfs $WEBDAV_URL ~/work/b2drop
 fi
