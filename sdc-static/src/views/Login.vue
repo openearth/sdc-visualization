@@ -31,15 +31,7 @@
                 </b-form-input>
             </b-form-group>
             <b-form-group id="input-group-3" label="b2drop url:" label-for="b2drop_url">
-                <b-form-input
-                    id="b2drop_url"
-                    v-model="form.url"
-                    type="text"
-                    required
-                    :state="!$v.form.url.$invalid"
-                    placeholder="Enter url"
-                    >
-                </b-form-input>
+                <b-form-select v-model="form.url" :options="urls"></b-form-select>
             </b-form-group>
 
             <b-button type="submit" variant="primary">Submit</b-button>
@@ -64,8 +56,12 @@ export default {
             form: {
                 username: '',
                 password: '',
-                url: ''
+                url: 'https://nc.seadatacloud.ml/remote.php/webdav/'
             },
+            urls: [
+                {value: 'https://b2drop.eudat.eu/remote.php/webdav/', text: 'b2drop'},
+                {value: 'https://nc.seadatacloud.ml/remote.php/webdav/', text: 'nc'}
+            ],
             show: true
         }
     },

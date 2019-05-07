@@ -6,7 +6,7 @@
     <form id="file-selector-form" action="https://webodv.seadatacloud.ml/file_selector" method="post" target="file-selector">
         <input type="hidden" name="b2drop_username" :value="username">
         <input type="hidden" name="b2drop_password" :value="password">
-        <input type="hidden" name="b2drop_url" :value="b2drop.url">
+        <input type="hidden" name="b2drop_url" :value="url">
     </form>
     <!-- for testing, load a local file -->
     <div>
@@ -37,17 +37,17 @@ export default {
     computed: {
         form () { return document.getElementById('file-selector-form') },
         username () { return this.$store.state.credentials.username },
+        url () { return this.$store.state.credentials.url },
         password () { return this.$store.state.credentials.password }
     },
     watch: {
         username () { this.form.submit() },
-        password () { this.form.submit() }
+        password () { this.form.submit() },
+        url () { this.form.submit() }
+
     },
     data () {
         return {
-            b2drop: {
-                url: 'https://nc.seadatacloud.ml/remote.php/webdav'
-            }
         }
     },
     methods: {
@@ -72,7 +72,7 @@ export default {
             this.$router.push({name: 'home'})
         },
         load(filename) {
-            const url = `http://localhost:5000/api/load`
+            const url = process.env.VUE_APP_REST + `/api/load`
             const body = { filename }
             return fetch(url, {
                 method: 'POST',
