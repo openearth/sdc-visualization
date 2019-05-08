@@ -72,6 +72,7 @@ def dataset():
             ensure_datetime(times[-1]).isoformat()
         ]
     }
+    ds.close()
     return jsonify(resp)
 
 
@@ -101,7 +102,7 @@ def extent():
     )
 
     resp = [t_ini.year, t_fin.year]
-
+    ds.close()
     return jsonify(resp)
 
 
@@ -119,6 +120,7 @@ def load():
     current_app.filename = filename
     ds = get_ds()
     resp["loaded"] = True
+    ds.close()
     return jsonify(resp)
 
 
@@ -151,6 +153,10 @@ def get_timeseries():
     ind = np.argmin( np.abs(np.sqrt((lat - lat_e)**2 + (lon - lon_e)**2)))
 
     data = ds.variables['var2'][ind][:].data
+
+    ds.close()
+
+    # TODO: read timeseries
     timeseries = dict({
         "time": np.arange(10).tolist() ,
         "data": np.arange(10).tolist()
@@ -236,6 +242,8 @@ def dataset_slice():
         geometry=geometry,
         properties={}
     )
+
+    ds.close()
     return jsonify(feature)
 
 
@@ -250,7 +258,7 @@ def create_app():
     app = Flask(__name__.split('.')[0])
     app.register_blueprint(blueprint)
     # make sure file is closed
-    app.teardown_appcontext(close_ds)
+    # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 
