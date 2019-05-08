@@ -8,11 +8,15 @@ export default new Vuex.Store({
         serverUrl: process.env.VUE_APP_REST,
         b2dropPath: process.env.VUE_APP_B2DROP,
         credentials: null,
+        metadata: null,
         layers: []
     },
     mutations: {
         credentials (state, credentials) {
             Vue.set(state, 'credentials', credentials)
+        },
+        metadata (state, metadata) {
+            Vue.set(state, 'metadata', metadata)
         },
         addLayer(state, layer) {
             state.layers.push(layer)

@@ -2,6 +2,7 @@
 
 import datetime
 import time
+import logging
 
 import netCDF4
 import numpy as np
@@ -12,6 +13,8 @@ from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 CORS(blueprint)
@@ -35,6 +38,7 @@ def dataset():
     """Return dataset metadata."""
     # get the dataset from the current app
     ds = get_ds()
+    logger.info('opened %s', ds)
     if ds is None:
         resp = {
             "_comment": "no data loaded"
@@ -60,10 +64,14 @@ def dataset():
             ds.variables['date_time'].units
         )
     except AttributeError:
-        times = [ds.variables['date_time'].min(), ds.variables['date_time'].max()]
+        # use datenums
+        times = netCDF4.num2date(
+            [date_nums.min(), date_nums.max()],
+            ds.variables['date_time'].units
+        )
 
-    print(times)
-
+    if times[0].year < 1970:
+        times[0] = datetime.datetime(1970, 1, 1)
     resp = {
         "name": ds.filepath(),
         "variables": list(ds.variables.keys()),

@@ -1,9 +1,13 @@
 """Console script for sdc_visualization."""
 import sys
+import logging
 
 import click
 
 from sdc_visualization.server import create_app
+
+
+logging.basicConfig(level=logging.INFO)
 
 @click.group()
 def cli():

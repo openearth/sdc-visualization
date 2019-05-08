@@ -105,9 +105,11 @@ export default {
             })
                 .then(response => {
                     const result = response.json()
-                    this.$emit('metadata', result)
                     return result
                 } )
+                .then(json => {
+                    this.$store.commit('metadata', json)
+                })
         }
     }
 }
