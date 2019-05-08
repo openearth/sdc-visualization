@@ -10,7 +10,7 @@
     </form>
     <!-- for testing, load a local file -->
     <div>
-        <button @click="load('./data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file</button>
+        <button @click="load('~/data/odv/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc')">load test file</button>
     </div>
 </div>
 </template>
@@ -59,7 +59,7 @@ export default {
             // names are in here
             let names = message.data.dataid
 
-            const b2dropPath = '~/data/odv'
+            const b2dropPath = this.$store.state.b2dropPath
             // remove the php part inline
             names = _.map(
                 names,
@@ -67,12 +67,13 @@ export default {
                     return _.replace(name, '/remote.php/webdav', b2dropPath)
                 }
             )
-            const name = _.first(names)
-            this.load(name)
+            const filename = _.first(names)
+            this.load(filename)
+            this.loadMetadata(filename)
             this.$router.push({name: 'home'})
         },
         load(filename) {
-            const url = process.env.VUE_APP_REST + `/api/load`
+            const url = this.$store.state.serverUrl + `/api/load`
             const body = { filename }
             return fetch(url, {
                 method: 'POST',
@@ -86,10 +87,27 @@ export default {
             })
                 .then(response => {
                     const result = response.json()
-                    console.log(result)
-                    this.$router.push({name: 'home'})
                     return result
                 } ); // parses response to JSON            fetch(server, )
+        },
+        loadMetadata(filename) {
+            const url = this.$store.state.serverUrl + `/api/dataset`
+            const body = { filename }
+            return fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrer: 'no-referrer', // no-referrer, *client
+                body: JSON.stringify(body), // body data type must match 'Content-Type' header
+            })
+                .then(response => {
+                    const result = response.json()
+                    this.$emit('metadata', result)
+                    return result
+                } )
         }
     }
 }

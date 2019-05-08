@@ -5,7 +5,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        serverUrl: "http://localhost:5000",
+        serverUrl: process.env.VUE_APP_REST,
+        b2dropPath: process.env.VUE_APP_B2DROP,
         credentials: null,
         layers: []
     },
