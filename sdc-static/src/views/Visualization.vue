@@ -1,5 +1,5 @@
 <template>
-  <div id="map" data-app>
+  <div id="map" >
     <!-- <div id="d-slider">
       <v-depth-slider>
       </v-depth-slider>

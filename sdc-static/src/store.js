@@ -15,7 +15,8 @@ export default new Vuex.Store({
         metadata: null,
         point: null,
         series: null,
-        layers: []
+        layers: [],
+        requestedYears: []
     },
     mutations: {
         credentials (state, credentials) {
@@ -24,11 +25,27 @@ export default new Vuex.Store({
         metadata (state, metadata) {
             Vue.set(state, 'metadata', metadata)
         },
+
         point (state, point) {
             Vue.set(state, 'point', point)
         },
         series (state, series) {
             Vue.set(state, 'series', series)
+        },
+        requestYear (state, year) {
+            if (_.includes(state.requestYears, year)) {
+                // it's already there
+                return
+            }
+            // add it, sort  it
+            let years  = _.sortBy(
+                _.uniq(
+                    _.concat(state.requestedYears, year)
+                )
+            )
+            // set it
+            Vue.set(state, 'requestedYears', years)
+
         },
         addLayer(state, layer) {
             state.layers.push(layer)
@@ -69,8 +86,6 @@ export default new Vuex.Store({
                 .then(json => {
                     console.log('reponse from load', json)
                     bus.$emit('message', 'File opened, wait for metadata to load to continue to the visualisation.')
-                    commit('clearLayers')
-                    dispatch('loadMetadata')
                 })
         },
         loadMetadata({commit, dispatch, state})  {
@@ -88,12 +103,10 @@ export default new Vuex.Store({
                 .then(json => {
                     commit('metadata', json)
                     bus.$emit('message', 'Metadata loaded. You can now start the visualisation.')
-                    dispatch('loadLayerData')
                 })
-
         },
         loadLayerData({ commit, state }) {
-            const range = _.range(2017, 2007 - 1, -1)
+            console.log('loadLayerData', state.requestedYears)
             const heatmapPaint = {
                 "heatmap-opacity": 1,
                 "heatmap-color": [
@@ -117,7 +130,7 @@ export default new Vuex.Store({
                     15
                 ]
             }
-            _.each(range, (year) => {
+            _.each(state.requestedYears, (year) => {
                 let id  = `heatmap_${year}`
                 // if we already have a layer, return it
                 if (_.find(state.layers, ['id', id])) {

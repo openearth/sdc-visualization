@@ -37,13 +37,31 @@ export default {
     },
     mounted() {
         this.getTimeRange()
+        // by default only load last year
+        this.$store.commit('requestYear', this.end)
+        // now we can request to load  layer data
+        this.loadLayerData()
+            .then(() => {
+                this.loadLayers()
+            })
         this.$refs.timeslider.$on('time-extent-update', (event) => {
-            this.daterange = [event.from_pretty, event.to_pretty]
+            this.daterange = [
+                _.toInteger(event.from_pretty),
+                _.toInteger(event.to_pretty)
+            ]
+            let range = _.range(this.daterange[0], this.daterange[1] + 1)
+            _.each(range, (year) => {
+                this.$store.commit('requestYear', year)
+            })
+            this.loadLayerData()
+                .then(() => {
+                    this.loadLayers()
+                })
+            console.log('daterange',  this.daterange, event)
             this.showLayer(event.from_pretty, event.to_pretty)
         })
         this.map = this.$refs.map.map
         this.map.on('load', () => {
-            this.loadLayers()
             this.map.addLayer({
                 "id": `point_layer`,
                 "type": "circle",
@@ -91,6 +109,7 @@ export default {
     methods: {
         ...mapActions([
             'loadData',
+            'loadLayerData',
             'loadPoints'
         ]),
         load () {
@@ -98,6 +117,11 @@ export default {
             const filename = '/remote.php/webdav/viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
             this.$store.commit('filename', filename)
             this.loadData()
+            this.$store.commit('requestYear', 2017)
+            this.$store.dispatch('loadLayerData')
+                .then(() => {
+                    this.loadLayers()
+                })
         },
         loadLayers () {
             // loop over all layers and check if they're loaded. If not add  it.

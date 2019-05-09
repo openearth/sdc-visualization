@@ -55,7 +55,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'loadData'
+            'loadData',
+            'loadMetadata'
         ]),
         receiveMessage(message) {
             // we expect a message from .ml
@@ -69,6 +70,10 @@ export default {
 
             this.$store.commit('filename', filename)
             this.loadData()
+                .then(() => {
+                    this.loadMetadata()
+                })
+
             this.$router.push({name: 'home'})
         }
     }
