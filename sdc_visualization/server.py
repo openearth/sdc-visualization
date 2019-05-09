@@ -3,6 +3,9 @@
 import datetime
 import time
 import logging
+import tempfile
+import pathlib
+import shutil
 
 import netCDF4
 import numpy as np
@@ -32,6 +35,42 @@ def home():
     return 'home'
 
 
+@blueprint.route('/api/load', methods=['POST'])
+@cross_origin()
+def load():
+    # TODO: validate filename further, otherwise we might load any file
+    req_data = request.get_json()
+
+    # the filename string
+    filename = req_data.get('filename')
+
+    # the expanded path
+    filepath = pathlib.Path(filename).expanduser()
+
+    resp = {"loaded": False}
+    if not filepath.suffix == '.nc':
+        resp["error"] = "filename does not end in .nc"
+        return jsonify(resp)
+    if not filepath.exists():
+        resp["error"] = "file does not exist"
+        return jsonify(resp)
+    print(req_data)
+    if req_data.get('copy', False):
+        tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
+        # copy the expanded file
+        shutil.copy(filepath, tmp_dir)
+        # replace filename with new filename
+        filename = str(pathlib.Path(tmp_dir) / filepath.name)
+    # add the dataset to the loaded app
+    # perhaps use flask.g, but that did not work
+    current_app.filename = filename
+    ds = get_ds()
+    resp["loaded"] = True
+    resp["filename"] = filename
+    ds.close()
+    return jsonify(resp)
+
+
 @blueprint.route('/api/dataset', methods=['GET', 'POST'])
 @cross_origin()
 def dataset():
@@ -56,7 +95,6 @@ def dataset():
             date = maybe_datetime
 
         return date
-    print(ds.variables['date_time'])
     # if we have an actual range, use that
     try:
         times = netCDF4.num2date(
@@ -113,23 +151,6 @@ def extent():
     ds.close()
     return jsonify(resp)
 
-
-@blueprint.route('/api/load', methods=['POST'])
-@cross_origin()
-def load():
-    # TODO: validate filename further, otherwise we might load any file
-    req_data = request.get_json()
-    filename = req_data.get('filename')
-    resp = {"loaded": False}
-    if not filename.endswith('.nc'):
-        resp["error"] = "filename does not end in .nc"
-    # add the dataset to the loaded app
-    # perhaps use flask.g, but that did not work
-    current_app.filename = filename
-    ds = get_ds()
-    resp["loaded"] = True
-    ds.close()
-    return jsonify(resp)
 
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
