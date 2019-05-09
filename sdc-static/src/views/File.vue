@@ -22,6 +22,9 @@
 </style>
 <script>
 import _ from 'lodash'
+
+import { mapActions } from 'vuex'
+
 export default {
     mounted () {
         const iframe = document.getElementById('file-selector')
@@ -51,6 +54,9 @@ export default {
         }
     },
     methods: {
+        ...mapActions([
+            'loadData'
+        ]),
         receiveMessage(message) {
             // we expect a message from .ml
             if (message.origin !== 'https://webodv.seadatacloud.ml') {
@@ -59,57 +65,11 @@ export default {
             // names are in here
             let names = message.data.dataid
 
-            const b2dropPath = this.$store.state.b2dropPath
-            // remove the php part inline
-            names = _.map(
-                names,
-                name => {
-                    return _.replace(name, '/remote.php/webdav', b2dropPath)
-                }
-            )
             const filename = _.first(names)
-            this.load(filename)
-            this.loadMetadata(filename)
+
+            this.$store.commit('filename', filename)
+            this.loadData()
             this.$router.push({name: 'home'})
-        },
-        load(filename) {
-            const url = this.$store.state.serverUrl + `/api/load`
-            const body = { filename }
-            return fetch(url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                redirect: 'follow', // manual, *follow, error
-                referrer: 'no-referrer', // no-referrer, *client
-                body: JSON.stringify(body), // body data type must match 'Content-Type' header
-            })
-                .then(response => {
-                    const result = response.json()
-                    return result
-                } ); // parses response to JSON            fetch(server, )
-        },
-        loadMetadata(filename) {
-            const url = this.$store.state.serverUrl + `/api/dataset`
-            const body = { filename }
-            return fetch(url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                redirect: 'follow', // manual, *follow, error
-                referrer: 'no-referrer', // no-referrer, *client
-                body: JSON.stringify(body), // body data type must match 'Content-Type' header
-            })
-                .then(response => {
-                    const result = response.json()
-                    return result
-                } )
-                .then(json => {
-                    this.$store.commit('metadata', json)
-                })
         }
     }
 }

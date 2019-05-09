@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import _ from 'lodash'
+import bus from '@/lib/bus'
 
 Vue.use(Vuex)
 
@@ -7,6 +9,7 @@ export default new Vuex.Store({
     state: {
         serverUrl: process.env.VUE_APP_REST,
         b2dropPath: process.env.VUE_APP_B2DROP,
+        filename: '',
         credentials: null,
         metadata: null,
         layers: []
@@ -20,10 +23,130 @@ export default new Vuex.Store({
         },
         addLayer(state, layer) {
             state.layers.push(layer)
+        },
+        clearLayers(state) {
+            Vue.set(state, 'layers', [])
+        },
+        filename (state, filename) {
+            const b2dropPath = state.b2dropPath
+            // remove the php part inline
+            filename = _.replace(filename, '/remote.php/webdav', b2dropPath)
+            Vue.set(state, 'filename', filename)
         }
-
     },
     actions: {
+        loadData({ commit, dispatch, state })  {
+            const url = state.serverUrl + `/api/load`
+            const body = { filename: state.filename }
+            // load data and post a message
+            return fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrer: 'no-referrer', // no-referrer, *client
+                body: JSON.stringify(body), // body data type must match 'Content-Type' header
+            })
+                .then(response => {
+                    const result = response.json()
+                    return result
+                })
+                .then(json => {
+                    console.log('reponse from load', json)
+                    bus.$emit('message', 'File opened, wait for metadata to load to continue to the visualisation.')
+                    commit('clearLayers')
+                    dispatch('loadMetadata')
+                })
+        },
+        loadMetadata({commit, dispatch, state})  {
+            const url = state.serverUrl + `/api/dataset`
+            return fetch(url, {
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    const result = response.json()
+                    return result
+                } )
+                .then(json => {
+                    commit('metadata', json)
+                    bus.$emit('message', 'Metadata loaded. You can now start the visualisation.')
+                    dispatch('loadLayerData')
+                })
+
+        },
+        loadLayerData({ commit, state }) {
+            const range = _.range(2017, 2007 - 1, -1)
+            const heatmapPaint = {
+                "heatmap-opacity": 1,
+                "heatmap-color": [
+                    "interpolate",
+                    ["linear"],
+                    ["heatmap-density"],
+                    0,
+                    "rgba(0, 0, 255, 0)",
+                    0.3,
+                    "hsla(180, 100%, 50%, 0.49)",
+                    1,
+                    "hsl(185, 100%, 100%)"
+                ],
+                "heatmap-radius": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    4,
+                    1,
+                    22,
+                    15
+                ]
+            }
+            _.each(range, (year) => {
+                let id  = `heatmap_${year}`
+                // if we already have a layer, return it
+                if (_.find(state.layers, ['id', id])) {
+                    return
+                }
+                let url = `${state.serverUrl}/api/slice?year=${year}`
+                fetch(url)
+                    .then((res) => {
+                        return res.json();
+                    })
+                    .then((json) => {
+                        let heatmapLayer = {
+                            "id": `heatmap_${year}`,
+                            "type": "heatmap",
+                            "source": {
+                                "data": json,
+                                "type": "geojson"
+                            },
+                            "layout": {},
+                            "paint": heatmapPaint
+                        }
+                        let pointLayer = {
+                            "id": `point_${year}`,
+                            "type": "circle",
+                            "source":
+                            {
+                                "data": json,
+                                "type": "geojson"
+                            },
+                            "layout": {},
+                            "paint": {
+                                'circle-opacity': 0
+                            }
+                        }
+                        commit('addLayer', heatmapLayer)
+                        commit('addLayer', pointLayer)
+
+                    })
+
+            })
+
+        }
 
     }
 })

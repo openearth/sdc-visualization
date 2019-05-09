@@ -18,6 +18,9 @@
       <v-btn icon @click.stop="plotdrawer = !plotdrawer">
         <v-icon>show_chart</v-icon>
       </v-btn>
+      <v-btn icon @click="load">
+        <v-icon>cloud_download</v-icon>
+      </v-btn>
     </v-toolbar>
     <div id="t-slider">
         <v-time-slider

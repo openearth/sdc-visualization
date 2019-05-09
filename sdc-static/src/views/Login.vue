@@ -43,11 +43,9 @@
 import Vue from 'vue'
 import Vuelidate from 'vuelidate'
 
-import { required, minLength, helpers } from 'vuelidate/lib/validators'
+import { required, minLength } from 'vuelidate/lib/validators'
 
 Vue.use(Vuelidate)
-
-const uuid = helpers.regex('uuid', /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)
 
 export default {
     name: 'Login',
