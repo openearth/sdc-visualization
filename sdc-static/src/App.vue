@@ -1,7 +1,7 @@
 <template>
-  <div id="app" >
+<div id="app" >
     <router-view></router-view>
-  </div>
+</div>
 </template>
 
 <script>
@@ -11,32 +11,32 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 Vue.use(BootstrapVue)
 export default {
-  name: 'App',
-  components: {
-  },
-  methods: {
-  },
-  mounted () {
-  },
-  watch: {
-  },
-  computed: {
-  },
-  data () {
-    return {
+    name: 'App',
+    components: {
+    },
+    methods: {
+    },
+    mounted () {
+    },
+    watch: {
+    },
+    computed: {
+    },
+    data () {
+        return {
+        }
     }
-  }
 }
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  width: 100vw;
-  height: 100vh;
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #2c3e50;
+    width: 100vw;
+    height: 100vh;
   margin: 0;
   padding: 0;
 }
