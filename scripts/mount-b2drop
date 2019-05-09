@@ -20,10 +20,13 @@ then
 
     # make dir for mount
     mkdir -p ~/work/b2drop
+    mkdir -p ~/work/webdav
 
     # make sure /etc/mtab exists
     touch /etc/mtab
 
     # mount b2drop to dir
-    mount -t davfs $WEBDAV_URL ~/work/b2drop
+    mount -t davfs $WEBDAV_URL ~/work/webdav
+    # copy data to the container
+    cp -r ~/work/webdav/viz ~/work/b2drop
 fi
