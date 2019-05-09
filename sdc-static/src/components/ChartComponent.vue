@@ -1,13 +1,27 @@
 <template>
-  <div>
-    <v-flex xs10 offset-xs1 d-flex> 
-    <v-select
-      :items="items"
-      label="Standard"
-    ></v-select>
-    </v-flex>
-    <div id="chart-container">
-    </div>
+<div>
+    <v-container fluid grid-list-xl>
+        <v-layout wrap align-center>
+        <v-flex>
+            <v-select
+                :items="variables"
+                v-model="x"
+                label="X"
+                >
+            </v-select>
+            <v-select
+                :items="variables"
+                v-model="y"
+                label="Y"
+                ></v-select>
+        </v-flex>
+        <v-flex>
+            <div id="chart-container">
+            </div>
+
+        </v-flex>
+        </v-layout>
+    </v-container>
   </div>
 </template>
 

@@ -1,98 +1,112 @@
-import Vue from 'vue';
 import echarts from 'echarts'
+import _ from 'lodash'
 
 export default {
-  name: "chart-component",
-  data () {
-    return {
-      graph: null,
-      graphdaterange: null,
-      option: null,
-      items: ['Temperature', 'Salinity']
-    }
-  },
-  props: {
-    daterange: {
-      type: Array
-    },
-    graphData: {
-      type: Object
-    }
-  },
-  watch: {
-      graphData: {
-          handler: function(graphData) {
-              this.option.series[0].data = graphData.data
-              this.option.xAxis.data = graphData.time
-              this.graph.setOption(this.option)
-          }
-      },
-    // Watch "layers". This is a switch, which can toggle a layer on or off
-    // When toggled, this watcher will activate the toggleLayers function.
-    daterange: {
-      handler: function(daterange) {
-        console.log('graphdaterange')
-        this.graphdaterange = daterange
-        console.log(daterange, parseInt(daterange[0]), daterange[1])
-        this.option.series[0].markArea = {
-            data: [[{
-                xAxis: daterange[0]
-            }, {
-                xAxis: daterange[1]
-            }]]
+    name: "chart-component",
+    data () {
+        return {
+            graph: null,
+            graphDateRange: null,
+            option: null,
+            x: null,
+            y: null,
+            items: ['Temperature', 'Salinity']
         }
+    },
+    props: {
+        xRange: {
+            type: Array
+        },
+        series: {
+            type: Object
+        }
+    },
+    computed: {
+        variables () {
+            // get the names
+            return _.keys(
+                // get the first record
+                _.first(
+                    // get data if available
+                    _.get(this.series, 'data')
+                )
+            )
+        }
+    },
+    watch: {
+        series (series) {
+            if (_.isNil(series)) {
+                return
+            }
+            this.option.series.data = series.data
+            this.option.xAxis.data = series.time
+            this.graph.setOption(this.option)
+        },
+        // Watch "layers". This is a switch, which can toggle a layer on or off
+        // When toggled, this watcher will activate the toggleLayers function.
+        dateRange: {
+            handler: function(dateRange) {
+                console.log('graphDateRange')
+                this.graphDateRange = dateRange
+                console.log(dateRange, parseInt(dateRange[0]), dateRange[1])
+                this.option.series[0].markArea = {
+                    data: [[{
+                        xAxis: dateRange[0]
+                    }, {
+                        xAxis: dateRange[1]
+                    }]]
+                }
 
-        this.graph.setOption(this.option)
-      },
-      deep: true
-    }
-  },
-  mounted() {
-    this.getVariables()
-    this.createGraph("Trajectory")
-
-  },
-  methods: {
-    getVariables() {
+                this.graph.setOption(this.option)
+            },
+            deep: true
+        }
+    },
+    mounted() {
+        this.getVariables()
+        this.createGraph("Trajectory")
 
     },
-    createGraph(type){
-      var dom = document.getElementById("chart-container")
-      this.graph = echarts.init(dom)
-      var app = {};
-      this.option = {
-          tooltip: {
-              trigger: 'axis',
-              axisPointer: {
-                  type: 'cross'
-              }
-          },
-          xAxis: {
-            type: 'category',
-            data: this.graphData.time
-          },
-          yAxis: {
-            type: 'value'
-          },
-          series: [
-              {
-                  type:'line',
-                  data: this.graphData.data,
-                  markArea: {
-                      data: [[{
-                          xAxis: this.daterange[0]
-                      }, {
-                          xAxis: this.daterange[1]
-                      }]]
-                  }
-              }
-          ]
-      }
+    methods: {
+        getVariables() {
 
-      console.log(this.option)
-      if (this.option && typeof this.option === "object") {
-        this.graph.setOption(this.option, true)
-      }
+        },
+        createGraph() {
+            var dom = document.getElementById("chart-container")
+            this.graph = echarts.init(dom)
+            this.option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: this.series.time
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        type:'line',
+                        data: this.series.data,
+                        markArea: {
+                            data: [[{
+                                xAxis: this.dateRange[0]
+                            }, {
+                                xAxis: this.dateRange[1]
+                            }]]
+                        }
+                    }
+                ]
+            }
+
+            console.log(this.option)
+            if (this.option && typeof this.option === "object") {
+                this.graph.setOption(this.option, true)
+            }
+        }
     }
-  }
 }

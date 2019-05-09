@@ -9,9 +9,12 @@ export default new Vuex.Store({
     state: {
         serverUrl: process.env.VUE_APP_REST,
         b2dropPath: process.env.VUE_APP_B2DROP,
+        copy: process.env.VUE_APP_COPY === 'true' ? true : false,
         filename: '',
         credentials: null,
         metadata: null,
+        point: null,
+        series: null,
         layers: []
     },
     mutations: {
@@ -20,6 +23,12 @@ export default new Vuex.Store({
         },
         metadata (state, metadata) {
             Vue.set(state, 'metadata', metadata)
+        },
+        point (state, point) {
+            Vue.set(state, 'point', point)
+        },
+        series (state, series) {
+            Vue.set(state, 'series', series)
         },
         addLayer(state, layer) {
             state.layers.push(layer)
@@ -37,7 +46,11 @@ export default new Vuex.Store({
     actions: {
         loadData({ commit, dispatch, state })  {
             const url = state.serverUrl + `/api/load`
-            const body = { filename: state.filename }
+            const body = {
+                filename: state.filename,
+                copy: state.copy
+            }
+
             // load data and post a message
             return fetch(url, {
                 method: 'POST',
@@ -145,6 +158,19 @@ export default new Vuex.Store({
                     })
 
             })
+
+        },
+        loadPoint({state, commit}) {
+            let pt = state.point
+            let url = `${state.serverUrl}/api/get_timeseries?lon=${pt.lng}&lat=${pt.lat}`
+            return fetch(url)
+                .then((res) => {
+                    return res.json();
+                })
+                .then((json) => {
+                    commit('series', json)
+                })
+
 
         }
 

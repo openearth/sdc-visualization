@@ -57,7 +57,6 @@ export default {
                     'circle-color': 'hsla(180, 100%, 80%, 0.49)' ,
                 }
             })
-            // this.loadMaplayers()
             this.map.on('mousemove', (e) => {
                 var year = this.daterange[0]
                 // set bbox as 5px reactangle area around clicked point
@@ -73,17 +72,8 @@ export default {
                 console.log('mouseover', e)
             })
             this.map.on('click', 'point_layer', (e) => {
-                fetch(`${store.state.serverUrl}/api/get_timeseries?lon=${e.lngLat.lng}&lat=${e.lngLat.lat}`, {
-                    method: "GET"
-                })
-                    .then((res) => {
-                        return res.json();
-                    })
-                    .then((response) => {
-                        this.graphData = response
-                        console.log(response)
-                    })
-
+                this.$store.commit('point', e.lngLat)
+                this.loadPoint()
                 console.log('click', e)
             })
         })
@@ -100,7 +90,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'loadData'
+            'loadData',
+            'loadPoints'
         ]),
         load () {
             // load demo data

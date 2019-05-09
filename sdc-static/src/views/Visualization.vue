@@ -8,7 +8,7 @@
 
     </v-navigation-drawer> -->
     <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
-      <chart-component :daterange="daterange" :graphData="graphData">
+      <chart-component :date-range="daterange" :graph-data="graphData">
       </chart-component>
     </v-navigation-drawer>
     <v-toolbar height="64px" fixed>
@@ -47,7 +47,9 @@
 <script src="./visualization.js">
 </script>
 
-<style>
+<style scoped>
+
+/* Visualization */
 @import '~mapbox-gl/dist/mapbox-gl.css';
 
 #map {

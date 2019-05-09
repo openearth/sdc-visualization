@@ -1,42 +1,55 @@
 <template>
 <div>
-    <b-container>
-        <b-form @submit="onSubmit" v-if="show">
-            <b-form-group
-                id="b2drop-group"
-                label="b2drop user name:"
-                label-for="b2drop_username"
-                description="Make sure you use the application user name"
-                >
-                <b-form-input
-                    id="b2drop_username"
-                    v-model="form.username"
-                    type="text"
-                    :state="!$v.form.username.$invalid"
-                    required
-                    placeholder="Enter b2drop user name"
-                    >
-                </b-form-input>
-            </b-form-group>
+    <v-form @submit="onSubmit" v-if="show">
+        <v-container>
+            <v-layout wrap>
+                <v-flex xs12>
+                    <h2>B2drop application credentials</h2>
+                </v-flex>
 
-            <b-form-group id="input-group-2" label="b2drop password:" label-for="b2drop_password">
-                <b-form-input
-                    id="b2drop_password"
-                    v-model="form.password"
-                    type="password"
-                    required
-                    :state="!$v.form.password.$invalid"
-                    placeholder="Enter password"
-                    >
-                </b-form-input>
-            </b-form-group>
-            <b-form-group id="input-group-3" label="b2drop url:" label-for="b2drop_url">
-                <b-form-select v-model="form.url" :options="urls"></b-form-select>
-            </b-form-group>
 
-            <b-button type="submit" variant="primary">Submit</b-button>
-        </b-form>
-    </b-container>
+                <v-flex
+                    xs8
+                    >
+                    <v-text-field
+                        id="b2drop_username"
+                        v-model="form.username"
+                        type="text"
+                        label="b2drop user name"
+                        :rules="[rules.required]"
+                        hint="Make sure you use the application user name"
+                        >
+                    </v-text-field>
+                </v-flex>
+                <v-flex
+                    xs8
+                    >
+                    <v-text-field
+                        id="b2drop_password"
+                        v-model="form.password"
+                        type="password"
+                        label="b2drop password"
+                        :rules="[rules.required]"
+                        placeholder="Enter password"
+                        hint="Make sure you use the b2drop application password "
+                        >
+                    </v-text-field>
+                </v-flex>
+                <v-flex
+                    xs8
+                    >
+                    <v-select
+                        v-model="form.url"
+                        :items="urls"
+                        label="Standard"
+                        ></v-select>
+                </v-flex>
+                <v-flex xs12>
+                    <v-btn type="submit" variant="primary">Submit</v-btn>
+                </v-flex>
+            </v-layout>
+        </v-container>
+    </v-form>
 </div>
 </template>
 <script>
@@ -60,6 +73,9 @@ export default {
                 {value: 'https://b2drop.eudat.eu/remote.php/webdav/', text: 'b2drop'},
                 {value: 'https://nc.seadatacloud.ml/remote.php/webdav/', text: 'nc'}
             ],
+            rules: {
+                required
+            },
             show: true
         }
     },
@@ -86,5 +102,5 @@ export default {
     }
   }
 </script>
-<style>
+<style scoped>
 </style>
