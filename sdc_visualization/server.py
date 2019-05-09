@@ -3,6 +3,7 @@
 import datetime
 import time
 import logging
+import json
 import tempfile
 import pathlib
 import shutil
@@ -10,6 +11,8 @@ import shutil
 import netCDF4
 import numpy as np
 import geojson
+import pyproj
+import pandas as pd
 
 from flask import Blueprint, Flask, jsonify, current_app, request, g
 from flask_cors import CORS, cross_origin
@@ -157,8 +160,8 @@ def extent():
 @cross_origin()
 def get_timeseries():
     """Return timeseries for point data"""
-    lon_e = float(request.values.get("lon", 0))
-    lat_e = float(request.values.get("lat", 0))
+    lon_i = float(request.values.get("lon", 0))
+    lat_i = float(request.values.get("lat", 0))
 
     """
     read some variables and return an open file handle,
@@ -171,26 +174,56 @@ def get_timeseries():
         })
 
     if 'lat' in ds.variables:
-        lat = ds['lat'][:]
+        station_lat = ds['lat'][:]
     elif 'latitude' in ds.variables:
-        lat = ds['latitude'][:]
+        station_lat = ds['latitude'][:]
     if 'lon' in ds.variables:
-        lon = ds['lon'][:]
+        station_lon = ds['lon'][:]
     elif 'longitude' in ds.variables:
-        lon = ds['longitude'][:]
+        station_lon = ds['longitude'][:]
 
-    ind = np.argmin( np.abs(np.sqrt((lat - lat_e)**2 + (lon - lon_e)**2)))
+    # convert to vector
+    lon = np.zeros_like(station_lon) + lon_i
+    lat = np.zeros_like(station_lat) + lat_i
 
-    data = ds.variables['var2'][ind][:].data
+    wgs84 = pyproj.Geod(ellps='WGS84')
+    _, _, distance = wgs84.inv(
+        lon, lat,
+        station_lon, station_lat
+    )
+    idx = distance.argmin()
 
+    var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if name.startswith('var') and not '_' in name
+    ]
+
+    # add the variables to the list
+    variables = {}
+    for var_name in var_names:
+        var = ds.variables[var_name]
+        variables[var.long_name] = var[idx]
+
+    df = pd.DataFrame(data=variables)
+    # get rid of missing data
+    df = df.dropna(how='all')
+
+    # get metadata
+    date_nums = ds.variables['date_time'][idx]
+    date_units = ds.variables['date_time'].units
+    date = netCDF4.num2date(date_nums, date_units)
+    records = json.loads(df.to_json(orient='records'))
     ds.close()
 
-    # TODO: read timeseries
-    timeseries = dict({
-        "time": np.arange(10).tolist() ,
-        "data": np.arange(10).tolist()
-    })
-    return jsonify(timeseries)
+    response = {
+        "data": records,
+        "meta": {
+            "date": date.isoformat()
+        }
+    }
+    return jsonify(response)
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 @cross_origin()
