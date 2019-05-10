@@ -160,8 +160,18 @@ def extent():
 @cross_origin()
 def get_timeseries():
     """Return timeseries for point data"""
-    lon_i = float(request.values.get("lon", 0))
-    lat_i = float(request.values.get("lat", 0))
+    lon_i = request.values.get("lon")
+    lat_i = request.values.get("lat")
+
+    cdi_id  = request.values.get("cdi_id")
+
+    if (lon_i is not None and lat_i is not None):
+        lon_i = float(lon_i)
+        lat_i = float(lat_i)
+    elif cdi_id is not None:
+        cdi_id = str(cdi_id)
+    else:
+        raise ValueError("Invalid input")
 
     """
     read some variables and return an open file handle,
@@ -182,16 +192,24 @@ def get_timeseries():
     elif 'longitude' in ds.variables:
         station_lon = ds['longitude'][:]
 
-    # convert to vector
-    lon = np.zeros_like(station_lon) + lon_i
-    lat = np.zeros_like(station_lat) + lat_i
+    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
 
-    wgs84 = pyproj.Geod(ellps='WGS84')
-    _, _, distance = wgs84.inv(
-        lon, lat,
-        station_lon, station_lat
-    )
-    idx = distance.argmin()
+    # convert to vector
+    if (lon_i is not None and lat_i is not None):
+        lon = np.zeros_like(station_lon) + lon_i
+        lat = np.zeros_like(station_lat) + lat_i
+
+        wgs84 = pyproj.Geod(ellps='WGS84')
+        _, _, distance = wgs84.inv(
+            lon, lat,
+            station_lon, station_lat
+        )
+        idx = distance.argmin()
+    elif cdi_id is not None:
+        # get the first
+        idx = np.argmax(cdi_ids == cdi_id)
+    else:
+        raise ValueError("Invalid input still....")
 
     var_names = [
         name
@@ -220,7 +238,8 @@ def get_timeseries():
     response = {
         "data": records,
         "meta": {
-            "date": date.isoformat()
+            "date": date.isoformat(),
+            "cdi_id": str(cdi_ids[idx])
         }
     }
     return jsonify(response)
@@ -294,19 +313,30 @@ def dataset_slice():
     elif 'longitude' in ds.variables:
         lon = ds['longitude'][is_in_date]
 
-    geometry = geojson.MultiPoint(
-        np.c_[
-            antimeridian_cut(lon),
-            lat
-        ].tolist()
-    )
-    feature = geojson.Feature(
-        geometry=geometry,
-        properties={}
-    )
 
+    cdi_id = netCDF4.chartostring(ds.variables['metavar4'][is_in_date])
+
+    coordinates = np.c_[
+        antimeridian_cut(lon),
+        lat
+    ].tolist()
+
+
+    features = []
+    for i, (coordinate, cdi_id_i) in enumerate(zip(coordinates, cdi_id)):
+        geometry = geojson.Point(coordinate)
+        feature = geojson.Feature(
+            id=i,
+            geometry=geometry,
+            properties={
+                "cdi_id": cdi_id_i
+            }
+        )
+        features.append(feature)
+
+    collection = geojson.FeatureCollection(features=features)
     ds.close()
-    return jsonify(feature)
+    return jsonify(collection)
 
 
 
