@@ -62,10 +62,13 @@ export default new Vuex.Store({
     },
     actions: {
         loadData({ commit, dispatch, state })  {
+            bus.$emit('message', 'Opening file. This will take a while (30s).')
+
             const url = state.serverUrl + `/api/load`
+
+            // TODO: allow to copy if webdav becomes fast enough
             const body = {
-                filename: state.filename,
-                copy: state.copy
+                filename: state.filename
             }
 
             // load data and post a message

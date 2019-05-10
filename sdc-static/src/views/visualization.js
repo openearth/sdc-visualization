@@ -83,7 +83,6 @@ export default {
                 if(this.map.getSource(`point_${year}`)) {
                     var features = this.map.queryRenderedFeatures(bbox, { layers: [`point_${year}`] })
                     this.map.getSource('point_layer').setData({type: 'FeatureCollection', features: features})
-
                 }
             })
             this.map.on('mouseover', 'point_layer', (e) => {
@@ -110,7 +109,7 @@ export default {
         ...mapActions([
             'loadData',
             'loadLayerData',
-            'loadPoints'
+            'loadPoint'
         ]),
         load () {
             // load demo data
