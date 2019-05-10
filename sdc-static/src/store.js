@@ -14,6 +14,7 @@ export default new Vuex.Store({
         credentials: null,
         metadata: null,
         point: null,
+        feature: null,
         series: null,
         layers: [],
         requestedYears: []
@@ -28,6 +29,9 @@ export default new Vuex.Store({
 
         point (state, point) {
             Vue.set(state, 'point', point)
+        },
+        feature (state, feature) {
+            Vue.set(state, 'feature', feature)
         },
         series (state, series) {
             Vue.set(state, 'series', series)
@@ -179,6 +183,19 @@ export default new Vuex.Store({
         loadPoint({state, commit}) {
             let pt = state.point
             let url = `${state.serverUrl}/api/get_timeseries?lon=${pt.lng}&lat=${pt.lat}`
+            return fetch(url)
+                .then((res) => {
+                    return res.json();
+                })
+                .then((json) => {
+                    commit('series', json)
+                })
+
+
+        },
+        loadFeature({state, commit}) {
+            let feature = state.feature
+            let url = `${state.serverUrl}/api/get_timeseries?cdi_id=${feature.properties.cdi_id}`
             return fetch(url)
                 .then((res) => {
                     return res.json();

@@ -26,9 +26,10 @@ export default {
             map: null,
             end: 2017,
             begin: 2007,
-            daterange: [],
+            daterange: [2007, 2017],
             timerange: [],
             graphData: {time: [], data: []},
+            hoverFeature: null,
             items: [
                 { title: 'Home', icon: 'dashboard' },
                 { title: 'About', icon: 'question_answer' }
@@ -76,22 +77,29 @@ export default {
                 }
             })
             this.map.on('mousemove', (e) => {
-                var year = this.daterange[0]
+                var year = this.daterange[1]
                 // set bbox as 5px reactangle area around clicked point
                 var buffer = 2
                 var bbox = [[e.point.x - buffer, e.point.y - buffer], [e.point.x + buffer, e.point.y + buffer]]
                 if(this.map.getSource(`point_${year}`)) {
-                    var features = this.map.queryRenderedFeatures(bbox, { layers: [`point_${year}`] })
+                    let features = this.map.queryRenderedFeatures(bbox, { layers: [`point_${year}`] })
                     this.map.getSource('point_layer').setData({type: 'FeatureCollection', features: features})
+                    if (features.length) {
+                        this.hoverFeature = _.first(features)
+                    } else {
+                        this.hoverFeature = null
+                    }
                 }
             })
             this.map.on('mouseover', 'point_layer', (e) => {
                 console.log('mouseover', e)
             })
             this.map.on('click', 'point_layer', (e) => {
-                this.$store.commit('point', e.lngLat)
-                this.loadPoint()
-                console.log('click', e)
+                if (_.isNil(this.hoverFeature)) {
+                    return
+                }
+                this.$store.commit('feature', this.hoverFeature)
+                this.loadFeature()
             })
         })
     },
@@ -109,7 +117,8 @@ export default {
         ...mapActions([
             'loadData',
             'loadLayerData',
-            'loadPoint'
+            'loadPoint',
+            'loadFeature'
         ]),
         load () {
             // load demo data

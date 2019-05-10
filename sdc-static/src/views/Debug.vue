@@ -11,7 +11,7 @@
     </chart-component>
     <h2 class="metadata">metadata</h2>
     <pre>
-        {{ this.$store.state.metadata }}
+        {{ this.$store.state.feature }}
     </pre>
 </div>
 </template>
@@ -36,7 +36,8 @@ export default {
     methods: {
         ...mapActions([
             'loadData',
-            'loadPoint'
+            'loadPoint',
+            'loadFeature'
         ]),
         load () {
             // load demo data
@@ -45,9 +46,9 @@ export default {
             this.loadData()
         },
         loadOnePoint () {
-            let point = {lng: 10, lat: 30}
-            this.$store.commit('point', point)
-            this.loadPoint()
+            let feature = {properties: {cdi_id: "51744026"}}
+            this.$store.commit('feature', feature)
+            this.loadFeature()
 
         }
 

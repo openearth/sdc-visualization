@@ -1,13 +1,18 @@
 <template>
-  <div id="map" >
+<div id="map" >
     <!-- <div id="d-slider">
-      <v-depth-slider>
-      </v-depth-slider>
+         <v-depth-slider>
+         </v-depth-slider>
     </div> -->
     <!-- <v-navigation-drawer mini-variant id="menudrawer" hide-overlay app v-model="menudrawer">
 
-    </v-navigation-drawer> -->
+         </v-navigation-drawer> -->
     <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
+        <v-card v-if="hoverFeature">
+            <v-card-title>
+                <h2>CDI ID: {{ hoverFeature.properties.cdi_id }}</h2>
+            </v-card-title>
+        </v-card>
       <chart-component :date-range="daterange" :graph-data="graphData">
       </chart-component>
     </v-navigation-drawer>
