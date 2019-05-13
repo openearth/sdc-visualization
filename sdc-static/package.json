@@ -18,6 +18,7 @@
     "moment": "^2.24.0",
     "vue": "^2.6.9",
     "vue-router": "^3.0.2",
+    "vue2-filters": "^0.6.0",
     "vue2mapbox-gl": "^0.4.50",
     "vuelidate": "^0.7.4",
     "vuetify": "^1.5.11",

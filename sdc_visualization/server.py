@@ -2,16 +2,25 @@
 
 import datetime
 import time
+import logging
+import json
+import tempfile
+import pathlib
+import shutil
 
 import netCDF4
 import numpy as np
 import geojson
+import pyproj
+import pandas as pd
 
 from flask import Blueprint, Flask, jsonify, current_app, request, g
 from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 CORS(blueprint)
@@ -29,12 +38,49 @@ def home():
     return 'home'
 
 
+@blueprint.route('/api/load', methods=['POST'])
+@cross_origin()
+def load():
+    # TODO: validate filename further, otherwise we might load any file
+    req_data = request.get_json()
+
+    # the filename string
+    filename = req_data.get('filename')
+
+    # the expanded path
+    filepath = pathlib.Path(filename).expanduser()
+
+    resp = {"loaded": False}
+    if not filepath.suffix == '.nc':
+        resp["error"] = "filename does not end in .nc"
+        return jsonify(resp)
+    if not filepath.exists():
+        resp["error"] = "file does not exist"
+        return jsonify(resp)
+    print(req_data)
+    if req_data.get('copy', False):
+        tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
+        # copy the expanded file
+        shutil.copy(filepath, tmp_dir)
+        # replace filename with new filename
+        filename = str(pathlib.Path(tmp_dir) / filepath.name)
+    # add the dataset to the loaded app
+    # perhaps use flask.g, but that did not work
+    current_app.filename = filename
+    ds = get_ds()
+    resp["loaded"] = True
+    resp["filename"] = filename
+    ds.close()
+    return jsonify(resp)
+
+
 @blueprint.route('/api/dataset', methods=['GET', 'POST'])
 @cross_origin()
 def dataset():
     """Return dataset metadata."""
     # get the dataset from the current app
     ds = get_ds()
+    logger.info('opened %s', ds)
     if ds is None:
         resp = {
             "_comment": "no data loaded"
@@ -52,7 +98,6 @@ def dataset():
             date = maybe_datetime
 
         return date
-    print(ds.variables['date_time'])
     # if we have an actual range, use that
     try:
         times = netCDF4.num2date(
@@ -60,10 +105,14 @@ def dataset():
             ds.variables['date_time'].units
         )
     except AttributeError:
-        times = [ds.variables['date_time'].min(), ds.variables['date_time'].max()]
+        # use datenums
+        times = netCDF4.num2date(
+            [date_nums.min(), date_nums.max()],
+            ds.variables['date_time'].units
+        )
 
-    print(times)
-
+    if times[0].year < 1970:
+        times[0] = datetime.datetime(1970, 1, 1)
     resp = {
         "name": ds.filepath(),
         "variables": list(ds.variables.keys()),
@@ -72,6 +121,7 @@ def dataset():
             ensure_datetime(times[-1]).isoformat()
         ]
     }
+    ds.close()
     return jsonify(resp)
 
 
@@ -101,26 +151,98 @@ def extent():
     )
 
     resp = [t_ini.year, t_fin.year]
-
+    ds.close()
     return jsonify(resp)
 
 
-@blueprint.route('/api/load', methods=['POST'])
+
+@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @cross_origin()
-def load():
-    # TODO: validate filename further, otherwise we might load any file
-    req_data = request.get_json()
-    filename = req_data.get('filename')
-    resp = {"loaded": False}
-    if not filename.endswith('.nc'):
-        resp["error"] = "filename does not end in .nc"
-    # add the dataset to the loaded app
-    # perhaps use flask.g, but that did not work
-    current_app.filename = filename
-    ds = get_ds()
-    resp["loaded"] = True
-    return jsonify(resp)
+def get_timeseries():
+    """Return timeseries for point data"""
+    lon_i = request.values.get("lon")
+    lat_i = request.values.get("lat")
 
+    cdi_id  = request.values.get("cdi_id")
+
+    if (lon_i is not None and lat_i is not None):
+        lon_i = float(lon_i)
+        lat_i = float(lat_i)
+    elif cdi_id is not None:
+        cdi_id = str(cdi_id)
+    else:
+        raise ValueError("Invalid input")
+
+    """
+    read some variables and return an open file handle,
+    based on data selection.
+    """
+    ds = get_ds()
+    if ds is None:
+        return jsonify({
+            'error': 'data not loaded'
+        })
+
+    if 'lat' in ds.variables:
+        station_lat = ds['lat'][:]
+    elif 'latitude' in ds.variables:
+        station_lat = ds['latitude'][:]
+    if 'lon' in ds.variables:
+        station_lon = ds['lon'][:]
+    elif 'longitude' in ds.variables:
+        station_lon = ds['longitude'][:]
+
+    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
+
+    # convert to vector
+    if (lon_i is not None and lat_i is not None):
+        lon = np.zeros_like(station_lon) + lon_i
+        lat = np.zeros_like(station_lat) + lat_i
+
+        wgs84 = pyproj.Geod(ellps='WGS84')
+        _, _, distance = wgs84.inv(
+            lon, lat,
+            station_lon, station_lat
+        )
+        idx = distance.argmin()
+    elif cdi_id is not None:
+        # get the first
+        idx = np.argmax(cdi_ids == cdi_id)
+    else:
+        raise ValueError("Invalid input still....")
+
+    var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if name.startswith('var') and not '_' in name
+    ]
+
+    # add the variables to the list
+    variables = {}
+    for var_name in var_names:
+        var = ds.variables[var_name]
+        variables[var.long_name] = var[idx]
+
+    df = pd.DataFrame(data=variables)
+    # get rid of missing data
+    df = df.dropna(how='all')
+
+    # get metadata
+    date_nums = ds.variables['date_time'][idx]
+    date_units = ds.variables['date_time'].units
+    date = netCDF4.num2date(date_nums, date_units)
+    records = json.loads(df.to_json(orient='records'))
+    ds.close()
+
+    response = {
+        "data": records,
+        "meta": {
+            "date": date.isoformat(),
+            "cdi_id": str(cdi_ids[idx])
+        }
+    }
+    return jsonify(response)
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 @cross_origin()
@@ -129,7 +251,6 @@ def dataset_slice():
     # get the dataset from the current app
     year = int(request.values.get('year', datetime.datetime.now().year))
     depth = int(request.values.get('depth', 0))
-
     """
     read some variables and return an open file handle,
     based on data selection.
@@ -192,18 +313,36 @@ def dataset_slice():
     elif 'longitude' in ds.variables:
         lon = ds['longitude'][is_in_date]
 
-    geometry = geojson.MultiPoint(
-        np.c_[
-            antimeridian_cut(lon),
-            lat
-        ].tolist()
-    )
-    feature = geojson.Feature(
-        geometry=geometry,
-        properties={}
-    )
-    return jsonify(feature)
 
+    cdi_id = netCDF4.chartostring(ds.variables['metavar4'][is_in_date])
+
+    coordinates = np.c_[
+        antimeridian_cut(lon),
+        lat
+    ].tolist()
+
+
+    features = []
+    for i, (coordinate, cdi_id_i) in enumerate(zip(coordinates, cdi_id)):
+        geometry = geojson.Point(coordinate)
+        feature = geojson.Feature(
+            id=i,
+            geometry=geometry,
+            properties={
+                "cdi_id": cdi_id_i
+            }
+        )
+        features.append(feature)
+
+    collection = geojson.FeatureCollection(features=features)
+    ds.close()
+    return jsonify(collection)
+
+
+
+#TODO: Need a request to get all variables back
+# def get_variables():
+#     return ds.variables
 
 def create_app():
     """Create an app."""
@@ -211,7 +350,7 @@ def create_app():
     app = Flask(__name__.split('.')[0])
     app.register_blueprint(blueprint)
     # make sure file is closed
-    app.teardown_appcontext(close_ds)
+    # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 

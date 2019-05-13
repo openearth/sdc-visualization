@@ -1,9 +1,13 @@
 """Console script for sdc_visualization."""
 import sys
+import logging
 
 import click
 
 from sdc_visualization.server import create_app
+
+
+logging.basicConfig(level=logging.INFO)
 
 @click.group()
 def cli():
@@ -26,7 +30,9 @@ def serve(debug, args=None):
         kwargs = dict(debug=True, use_reloader=False)
     else:
         kwargs ={"host": "0.0.0.0"}
-    app.run(**kwargs)
+    # threading gave some issues with netCDF, test with app/global context and multiple requests before enabling threading
+    # add gunicorn for performance
+    app.run(threaded=False, **kwargs)
 
 
 if __name__ == "__main__":

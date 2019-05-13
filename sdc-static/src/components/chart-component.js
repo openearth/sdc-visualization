@@ -1,89 +1,112 @@
-import Vue from 'vue';
 import echarts from 'echarts'
+import Vue from 'vue'
+import _ from 'lodash'
 
 export default {
-  name: "chart-component",
-  data () {
-    return {
-      graph: null,
-      graphdaterange: null,
-      option: null,
-      items: ['Temperature', 'Salinity']
-    }
-  },
-  props: {
-    daterange: {
-      type: Array
-    }
-  },
-  watch: {
-    // Watch "layers". This is a switch, which can toggle a layer on or off
-    // When toggled, this watcher will activate the toggleLayers function.
-    daterange: {
-      handler: function(daterange) {
-        console.log('graphdaterange')
-        this.graphdaterange = daterange
-        console.log(daterange, parseInt(daterange[0]), daterange[1])
-        this.option.series[0].markArea = {
-            data: [[{
-                xAxis: daterange[0]
-            }, {
-                xAxis: daterange[1]
-            }]]
+    name: "chart-component",
+    data () {
+        return {
+            graph: null,
+            graphDateRange: null,
+            x: null,
+            y: null
+        }
+    },
+    props: {
+        xRange: {
+            type: Array
+        },
+        series: {
+            type: Object
+        }
+    },
+    computed: {
+        variables () {
+            // get the names
+            return _.keys(
+                // get the first record
+                _.first(
+                    // get data if available
+                    _.get(this.series, 'data')
+                )
+            )
+        },
+        xyValues () {
+            let values = _.zip(this.xValues, this.yValues)
+            return values
+        },
+        xValues () {
+            if (_.isNil(this.series)) {
+                return []
+            }
+            if (_.isNil(this.x)) {
+                return []
+            }
+            let data = this.series.data
+            let x = this.x
+            let values = _.map(data, x)
+            return values
+        },
+        yValues () {
+            if (_.isNil(this.series)) {
+                return []
+            }
+            if (_.isNil(this.y)) {
+                return []
+            }
+            let data = this.series.data
+            let y = this.y
+            let values = _.map(data, y)
+            return values
+        },
+        option () {
+            let options = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                xAxis: {
+                    min: _.min(this.xValues),
+                    max: _.max(this.xValues)
+                },
+                yAxis: {
+                    min: _.min(this.yValues),
+                    max: _.max(this.yValues)
+                },
+                series: [
+                    {
+                        symbolSize: 2,
+                        type: 'scatter',
+                        data: this.xyValues
+                    }
+                ]
+            }
+            return options
+
         }
 
-        console.log(this.option)
-        this.graph.setOption(this.option)
-      },
-      deep: true
-    }
-  },
-  mounted() {
-    this.getVariables()
-    this.createGraph("Trajectory")
-
-  },
-  methods: {
-    getVariables() {
+    },
+    watch: {
+        option (option) {
+            this.graph.setOption(option)
+        }
+    },
+    mounted() {
+        this.getVariables()
+        this.createGraph("Trajectory")
 
     },
-    createGraph(type){
-      var dom = document.getElementById("chart-container")
-      this.graph = echarts.init(dom)
-      var app = {};
-      this.option = {
-          tooltip: {
-              trigger: 'axis',
-              axisPointer: {
-                  type: 'cross'
-              }
-          },
-          xAxis: {
-            type: 'category',
-            data: [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019]
-          },
-          yAxis: {
-            type: 'value'
-          },
-          series: [
-              {
-                  type:'line',
-                  data: [300, 280, 250, 260, 270, 300, 550, 500, 400, 390, 380, 390, 400, 500, 600, 750, 800, 700, 600, 400],
-                  markArea: {
-                      data: [[{
-                          xAxis: this.daterange[0]
-                      }, {
-                          xAxis: this.daterange[1]
-                      }]]
-                  }
-              }
-          ]
-      }
+    methods: {
+        getVariables() {
 
-      console.log(this.option)
-      if (this.option && typeof this.option === "object") {
-        this.graph.setOption(this.option, true)
-      }
+        },
+        createGraph() {
+            var dom = document.getElementById("chart-container")
+            this.graph = echarts.init(dom)
+            this.graph.setOption(this.option, true)
+
+        }
     }
-  }
 }

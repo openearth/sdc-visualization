@@ -1,21 +1,23 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
-import Map from './views/Map.vue'
+import Visualization from './views/Visualization.vue'
 import Login from './views/Login.vue'
+import Debug from './views/Debug.vue'
 
 Vue.use(Router)
 
 export default new Router({
-    routes: [{
+    routes: [
+        {
             path: '/',
             name: 'home',
             component: Home
         },
         {
-            path: '/map',
-            name: 'map',
-            component: Map
+            path: '/visualization',
+            name: 'visualization',
+            component: Visualization
         },
         {
             path: '/file-selector',
@@ -32,6 +34,11 @@ export default new Router({
             path: '/credentials',
             name: 'credentials',
             component: Login
+        },
+        {
+            path: '/debug',
+            name: 'debug',
+            component: Debug
         },
     ]
 })

@@ -3,23 +3,14 @@ import Vue from 'vue';
 import moment from 'moment';
 import ionRangeslider from 'ion-rangeslider/js/ion.rangeSlider.js';
 
+const FORMATS = {
+    year: "Y",
+    month: "Y-MM",
+    day: "Y-MM-DD"
+}
 
-const FORMATS = [
-  {
-    interval: "years",
-    format: "Y-MM-DD"
-  },
-  {
-    interval: "months",
-    format: "Y-MM"
-  },
-  {
-    interval: "days",
-    format: "Y-MM-DD"
-  }
-]
 
-const day_format = "Y"
+
 export default {
   name: "time-slider",
   props: {
@@ -39,7 +30,7 @@ export default {
     extent: {
       type: Array,
       default () {
-        let now = moment()
+        let now = moment('2017-01-01T00:00:00')
         let then = moment().subtract(10, this.interval);
         return [then, now]
       }
@@ -51,13 +42,14 @@ export default {
       configDialog: false,
       startDateMenu: false,
       endDateMenu: false,
-      format: day_format,
+      format: FORMATS.year,
 
-      // by default use the full extent
-      startDate: this.extent[0].format(day_format),
-      endDate: this.extent[1].format(day_format),
-      to: this.extent[1].format(day_format),
-      from: this.extent[1].subtract(1, this.interval).format(day_format),
+        // by default use the full extent
+
+      startDate: this.extent[0].format(FORMATS.year),
+      endDate: this.extent[1].format(FORMATS.year),
+      to: this.extent[1].format(FORMATS.year),
+      from: this.extent[1].subtract(1, this.interval).format(FORMATS.year),
 
       // duration of a loop
       loopDuration: 20,
@@ -70,7 +62,6 @@ export default {
     };
   },
   mounted() {
-    console.log(this.startDate, this.endDate, day_format)
     Vue.nextTick(() => {
       let input = this.$el.querySelector("input.slider");
       $(input).ionRangeSlider({
@@ -87,15 +78,13 @@ export default {
         grid: false,
         hide_min_max: true,
         onUpdate: (val) => {
-          console.log('onUpdate', val)
           this.$emit('time-extent-update', val)
         },
         onChange: (val) => {
-          console.log('onChange', val)
           this.$emit('time-extent-update', val)
         },
         prettify: function (num) {
-          return moment(num, "X").format(day_format);
+          return moment(num, "X").format(FORMATS.year);
         }
       });
       this.slider = $(input).data("ionRangeSlider");
@@ -138,15 +127,15 @@ export default {
         return;
       }
       // update with fraction
-      this.from = moment(this.from).add(1, this.interval).format(day_format)
-      this.to = moment(this.to).add(1, this.interval).format(day_format)
+      this.from = moment(this.from).add(1, this.interval).format(FORMATS.year)
+      this.to = moment(this.to).add(1, this.interval).format(FORMATS.year)
       // TODO: google earth uses a smarter loop,
       // it keeps track of the diff somehow
       // we reached the end, loop
-      if (this.to > moment(this.endDate).format(day_format)) {
+      if (this.to > moment(this.endDate).format(FORMATS.year)) {
         if (this.loop) {
-          this.to = moment(this.startDate).add(1, this.interval).format(day_format)
-          this.from =  moment(this.startDate).format(day_format)
+          this.to = moment(this.startDate).add(1, this.interval).format(FORMATS.year)
+          this.from =  moment(this.startDate).format(FORMATS.year)
         } else {
           // stop updating
           return;
@@ -167,13 +156,13 @@ export default {
       return time
     },
     dateFormat (fraction) {
-      return this.dateByFraction(fraction).format(day_format)
+      return this.dateByFraction(fraction).format(FORMATS.year)
     },
     allowedDates() {
       // return allowed dates, based on extent
       return {
-        min: this.extent[0].format(day_format),
-        max: this.extent[1].format(day_format)
+        min: this.extent[0].format(FORMATS.year),
+        max: this.extent[1].format(FORMATS.year)
       }
     }
   },

@@ -1,14 +1,27 @@
 <template>
-  <div>
-    <v-flex xs10 offset-xs1 d-flex> 
-    <v-select
-      :items="items"
-      label="Standard"
-    ></v-select>
-    </v-flex>
-    <div id="chart-container">
-    </div>
-  </div>
+<div>
+    <v-container fluid>
+        <v-layout wrap align-center>
+            <v-flex xs12>
+                <v-select
+                    :items="variables"
+                    v-model="x"
+                    label="X"
+                    >
+                </v-select>
+                <v-select
+                    :items="variables"
+                    v-model="y"
+                    label="Y"
+                    ></v-select>
+            </v-flex>
+            <v-flex xs12 v-show="series">
+                <div id="chart-container">
+                </div>
+            </v-flex>
+        </v-layout>
+    </v-container>
+</div>
 </template>
 
 <script src="./chart-component.js">
@@ -16,8 +29,8 @@
 
 <style>
 #chart-container{
-  width: 360px;
-  height: 300px;
+    width: 360px;
+    height: 300px;
   margin: 20px;
 }
 </style>

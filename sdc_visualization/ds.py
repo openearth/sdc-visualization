@@ -7,10 +7,10 @@ def get_ds():
     """get the dataset"""
     if not hasattr(current_app, 'filename'):
         return None
-    if 'ds' not in g:
-        g.ds = load_dataset(current_app.filename)
 
-    return g.ds
+    ds = load_dataset(current_app.filename)
+
+    return ds
 
 
 def close_ds(e=None):
@@ -23,4 +23,5 @@ def close_ds(e=None):
 def load_dataset(filename):
     path = pathlib.Path(filename).expanduser()
     ds = netCDF4.Dataset(path)
+    # make sure to close it in the request
     return ds
