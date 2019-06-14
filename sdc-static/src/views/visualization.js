@@ -46,6 +46,7 @@ export default {
                 this.loadLayers()
             })
         this.$refs.timeslider.$on('time-extent-update', (event) => {
+
             this.daterange = [
                 _.toInteger(event.from_pretty),
                 _.toInteger(event.to_pretty)
@@ -77,12 +78,14 @@ export default {
                 }
             })
             this.map.on('mousemove', (e) => {
-                var year = this.daterange[1]
+                let year = this.daterange[1]
+                let yearRange = _.range(this.daterange[0], this.daterange[1])
+                let layers = _.map(yearRange, (year) => `point_${year}`)
                 // set bbox as 5px reactangle area around clicked point
-                var buffer = 2
-                var bbox = [[e.point.x - buffer, e.point.y - buffer], [e.point.x + buffer, e.point.y + buffer]]
+                let buffer = 2
+                let bbox = [[e.point.x - buffer, e.point.y - buffer], [e.point.x + buffer, e.point.y + buffer]]
                 if(this.map.getSource(`point_${year}`)) {
-                    let features = this.map.queryRenderedFeatures(bbox, { layers: [`point_${year}`] })
+                    let features = this.map.queryRenderedFeatures(bbox, { layers: layers })
                     this.map.getSource('point_layer').setData({type: 'FeatureCollection', features: features})
                     if (features.length) {
                         this.hoverFeature = _.first(features)
@@ -95,6 +98,7 @@ export default {
                 console.log('mouseover', e)
             })
             this.map.on('click', 'point_layer', (e) => {
+                console.log('click', e)
                 if (_.isNil(this.hoverFeature)) {
                     return
                 }
@@ -110,7 +114,8 @@ export default {
     },
     computed: {
         ...mapState([
-            'layers'
+            'layers',
+            'series'
         ])
     },
     methods: {
