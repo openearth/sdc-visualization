@@ -7,8 +7,10 @@
                     <v-img src="form.png"></v-img>
                     <div>
                         <v-card-title>
-                            <h2>Credentials</h2>
-                            <div>Fill in your b2drop credentials</div>
+                            <div>
+                                <h2>Credentials</h2>
+                                <div>Fill in your b2drop credentials</div>
+                            </div>
                         </v-card-title>
 
                     </div>
@@ -28,8 +30,10 @@
                     <v-img src="file-selector.png"></v-img>
                     <div>
                         <v-card-title>
-                            <h2>File selector</h2>
-                            <div>Select a file to use for visualization in the map.</div>
+                            <div>
+                                <h2>File selector</h2>
+                                <div>Select a file to use for visualization in the map</div>
+                            </div>
                         </v-card-title>
 
                     </div>
@@ -50,8 +54,10 @@
                     <v-img src="mapbox.png"></v-img>
                     <div>
                         <v-card-title>
-                            <h2>Visualization</h2>
-                            <div>Create visualizations on the map</div>
+                            <div>
+                                <h2>Visualization</h2>
+                                <div>Create visualizations on the map</div>
+                            </div>
                         </v-card-title>
 
                     </div>
@@ -71,8 +77,10 @@
                     <v-img src="nav_logo.svg"></v-img>
                     <div>
                         <v-card-title>
-                            <h2>Notebook</h2>
-                            <div>Run a visualization notebook that allows you to connect to your b2drop files.</div>
+                            <div>
+                                <h2>Notebook</h2>
+                                <div>Run a visualization notebook that allows you to connect to your b2drop files.</div>
+                            </div>
                         </v-card-title>
 
                     </div>
