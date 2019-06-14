@@ -7,7 +7,6 @@ RUN apt-get update && \
     apt-get install davfs2 --yes
 
 COPY notebooks/*.ipynb ./work/
-COPY . ./src/
 # Copy the mount command to the proper directory
 COPY scripts/mount-b2drop /etc/init.d/mount-b2drop
 # Copy the logging code to the home directory
