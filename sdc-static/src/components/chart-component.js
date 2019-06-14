@@ -2,6 +2,7 @@ import echarts from 'echarts'
 import Vue from 'vue'
 import _ from 'lodash'
 
+// TODO: replace this with vue-echart
 export default {
     name: "chart-component",
     data () {
@@ -18,6 +19,12 @@ export default {
         },
         series: {
             type: Object
+        },
+        options: {
+            type: Object,
+            default () {
+                return {}
+            }
         }
     },
     computed: {
@@ -73,7 +80,8 @@ export default {
                 },
                 yAxis: {
                     min: _.min(this.yValues),
-                    max: _.max(this.yValues)
+                    max: _.max(this.yValues),
+                    inverse: this.x === 'Depth'
                 },
                 series: [
                     {
@@ -83,6 +91,7 @@ export default {
                     }
                 ]
             }
+            options = _.merge(options, this.options)
             return options
 
         }
