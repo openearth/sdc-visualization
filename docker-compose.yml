@@ -1,31 +1,59 @@
-version: '2'
+version: '3.3'
 services:
-  sdc-visualization-notebook:
-    image: sdc-visualization-notebook
+  nginx:
+    image: nginx
+    networks:
+      - deltares
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80" # nginx is exposed to 8003 outside
+    depends_on:
+      - rest
+      - static
+    command: [nginx-debug, '-g', 'daemon off;']
+  notebook:
+    image: openearth/sdc-visualization-notebook
+    networks:
+      - deltares
     volumes:
       - storage:/home/jovyan/storage:rw
     ports:
-      - "8888:8888"
+      - "8888"
     cap_add:
       - SYS_ADMIN
     devices:
       - "/dev/fuse"
-  sdc-visualization-service:
-    image: sdc-visualization-service
+  rest:
+    image: openearth/sdc-visualization-service
+    networks:
+      - deltares
+    restart: always
     ports:
-      - "5000:5000"
+      - "5000"
     cap_add:
       - SYS_ADMIN
     devices:
       - "/dev/fuse"
-  sdc-visualization-static:
-    image: sdc-visualization-static
+    environment:
+      - WEBDAV_URL=https://nc.seadatacloud.ml/remote.php/webdav
+      - WEBDAV_USERNAME=USER
+      - WEBDAV_PASSWORD=PASSWORD
+      - SYS_ADMIN
     ports:
-      - "80:80"
-    cap_add:
-      - SYS_ADMIN
-    devices:
-      - "/dev/fuse"
+      - "5000" # no exposure to outside, no SSL (nginx handles that)
+  static:
+    image: openearth/sdc-visualization-static
+    networks:
+      - deltares
+    restart: always
+    ports:
+      - "80"
+networks:
+  deltares:
+    driver: "bridge"
+
 volumes:
   storage:
     driver: local
