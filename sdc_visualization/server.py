@@ -7,6 +7,7 @@ import json
 import tempfile
 import pathlib
 import shutil
+import os
 
 import netCDF4
 import numpy as np
@@ -14,7 +15,9 @@ import geojson
 import pyproj
 import pandas as pd
 
-from flask import Blueprint, Flask, jsonify, current_app, request, g
+import webdav3.client
+
+from flask import Blueprint, Flask, jsonify, session, current_app, request, g
 from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
@@ -37,6 +40,60 @@ def home():
     """Home page."""
     return 'home'
 
+
+@blueprint.route('/login', methods=['POST'])
+def login():
+    """Login"""
+    session['username'] = request.form['username']
+    return jsonify({"result": "ok", "message": "user logged in"})
+
+@blueprint.route('/logout', methods=['POST'])
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    return jsonify({"result": "ok", "message": "user logged out"})
+
+@blueprint.route('/api/load-webdav', methods=['POST'])
+def load_webdav():
+    req_data = request.get_json()
+    filename = req_data['filename']
+    options = {
+        'webdav_hostname': req_data['url'],
+        'webdav_login': req_data['username'],
+        'webdav_password': req_data['password']
+    }
+    filename = 'viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    remote_path = pathlib.Path(
+        filename
+    )
+    tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
+    local_path = pathlib.Path(tmp_dir) / remote_path.name
+
+    client = webdav3.client.Client(options)
+    ls = client.list('viz')
+
+    resp = {'ls': ls}
+    # let's assume it works
+    resp["loaded"] = True
+    resp["local_path"] = str(local_path)
+    resp["remote_path"] = str(remote_path)
+
+    resp["check"] = client.check(remote_path=str(remote_path))
+
+    try:
+        # split for debugging
+        args = dict(
+            local_path=str(local_path),
+            remote_path=str(remote_path)
+        )
+        client.download(**args)
+    except webdav3.exceptions.RemoteResourceNotFound as e:
+        logger.exception("download failed")
+        resp['message'] = str(e)
+        resp['loaded'] = False
+
+    resp["filename"] = filename
+    return jsonify(resp)
 
 @blueprint.route('/api/load', methods=['POST'])
 @cross_origin()
@@ -353,5 +410,8 @@ def create_app():
     # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
+
+    # TODO: get this from docker secret /run/secret
+    app.secret_key = os.urandom(16)
 
     return app
