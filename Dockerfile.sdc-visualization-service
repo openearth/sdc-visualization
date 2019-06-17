@@ -8,7 +8,7 @@ WORKDIR /root
 ENV DEBIAN_FRONTEND=noninteractive
 # update system and install dependencies
 RUN apt update && \
-    apt install -y davfs2
+    apt install -y davfs2  vim wget curl
 
 # Install packages with binary dependencies through conda
 RUN conda config --add channels conda-forge && conda install matplotlib netCDF4 numpy pandas jupyter notebook pyproj
