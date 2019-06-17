@@ -47,7 +47,7 @@ def login():
     session['username'] = request.form['username']
     session['password'] = request.form['password']
     session['url'] = request.form['url']
-    return jsonify({"ok":  "true"})
+    return jsonify({"ok":  True})
 
 
 @blueprint.route('/logout', methods=['POST'])
