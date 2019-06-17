@@ -30,8 +30,8 @@ export default {
     extent: {
       type: Array,
       default () {
-        let now = moment('2017-01-01T00:00:00')
-        let then = moment().subtract(10, this.interval);
+        let now = moment('2017-12-31T00:00:00')
+        let then = moment('2010-01-01T00:00:00')
         return [then, now]
       }
     },

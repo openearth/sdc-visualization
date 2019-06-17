@@ -24,53 +24,6 @@
                     </v-card-actions>
                 </v-card>
             </v-flex>
-            <v-flex sm3 pa-3>
-                <v-card pa-3>
-                    <v-img src="form.png"></v-img>
-                    <div>
-                        <v-card-title>
-                            <div>
-                                <h2>Credentials</h2>
-                                <div>Fill in your b2drop credentials</div>
-                            </div>
-                        </v-card-title>
-
-                    </div>
-                    <v-card-actions>
-                        <v-btn
-                            flat
-                            href="#/credentials"
-                            :color="$store.state.credentials ? '' : 'primary'"
-                            >Go</v-btn>
-                    </v-card-actions>
-                </v-card>
-
-
-            </v-flex>
-            <v-flex sm3 pa-3>
-                <v-card>
-                    <v-img src="file-selector.png"></v-img>
-                    <div>
-                        <v-card-title>
-                            <div>
-                                <h2>File selector</h2>
-                                <div>Select a file to use for visualization in the map</div>
-                            </div>
-                        </v-card-title>
-
-                    </div>
-                    <v-card-actions>
-                        <v-btn
-                            flat
-                            href="#/file-selector"
-                            :color="$store.state.metadata ? '' : 'primary'"
-                            >
-                            Go
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-flex>
-
         </v-layout>
     </v-container>
     <v-snackbar
