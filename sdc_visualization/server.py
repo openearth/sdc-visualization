@@ -19,6 +19,7 @@ import webdav3.client
 
 from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
+from flask_talisman import Talisman
 
 from sdc_visualization.ds import get_ds, close_ds
 
@@ -421,11 +422,14 @@ def create_app():
     app = Flask(__name__.split('.')[0])
     app.config['PREFERRED_URL_SCHEME'] = 'https'
 
+
+
     app.register_blueprint(blueprint)
     # make sure file is closed
     # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
+    Talisman(app)
 
     # TODO: get this from docker secret /run/secret
     app.secret_key = os.urandom(16)
