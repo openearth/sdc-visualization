@@ -15,8 +15,6 @@ RUN conda config --add channels conda-forge && conda install matplotlib netCDF4 
 
 COPY scripts/startup.sh .
 
-RUN echo ". ~/.b-log" >> ~/.bashrc
-
 # The rest with pip
 COPY . ./app
 
