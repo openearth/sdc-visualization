@@ -47,7 +47,8 @@ def login():
     session['username'] = request.form['username']
     session['password'] = request.form['password']
     session['url'] = request.form['url']
-    return jsonify({"ok":  True})
+    # redirect to this directory.
+    return redirect('https://orca.dkrz.de:8003')
 
 
 @blueprint.route('/logout', methods=['POST'])
