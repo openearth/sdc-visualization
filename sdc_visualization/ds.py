@@ -5,10 +5,13 @@ import netCDF4
 
 def get_ds():
     """get the dataset"""
-    if not hasattr(current_app, 'filename'):
-        return None
 
-    ds = load_dataset(current_app.filename)
+    if hasattr(current_app, 'filename'):
+        filename = current_app.filename
+
+    # overwrite  with default
+    filename = 'data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    ds = load_dataset(filename)
 
     return ds
 
