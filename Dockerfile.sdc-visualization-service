@@ -23,6 +23,7 @@ RUN echo ". ~/.b-log" >> ~/.bashrc
 
 # The rest with pip
 COPY . ./app
+
 RUN pip install -r ./app/requirements.txt
 RUN pip install -e ./app
 
