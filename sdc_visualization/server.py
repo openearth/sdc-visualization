@@ -49,6 +49,7 @@ def login():
     session['url'] = request.form['url']
     return redirect('/')
 
+
 @blueprint.route('/logout', methods=['POST'])
 def logout():
     # remove the username from the session if it's there
@@ -62,9 +63,9 @@ def load_webdav():
     req_data = request.get_json()
     filename = req_data['filename']
     options = {
-        'webdav_hostname': req_data['url'],
-        'webdav_login': req_data['username'],
-        'webdav_password': req_data['password']
+        'webdav_login': session['username'],
+        'webdav_password': session['password'],
+        'webdav_hostname': session['url']
     }
     filename = 'viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
     remote_path = pathlib.Path(
@@ -73,10 +74,19 @@ def load_webdav():
     tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
     local_path = pathlib.Path(tmp_dir) / remote_path.name
 
+    print(options)
     client = webdav3.client.Client(options)
-    ls = client.list('viz')
+    client.http_header['list'].append('Authorization: Bearer')
+    # for  debuggin show the list of files
+    try:
+        ls = client.list()
+        resp = {'ls': ls}
+        ls_viz = client.list('viz')
+        resp['ls_viz'] = ls_viz
+    except webdav3.exceptions.RemoteResourceNotFound:
+        pass
 
-    resp = {'ls': ls}
+
     # let's assume it works
     resp["loaded"] = True
     resp["local_path"] = str(local_path)
@@ -84,14 +94,15 @@ def load_webdav():
 
     resp["check"] = client.check(remote_path=str(remote_path))
 
-    try:
+    # if file exists
+    if resp['check']:
         # split for debugging
         args = dict(
             local_path=str(local_path),
             remote_path=str(remote_path)
         )
         client.download(**args)
-    except webdav3.exceptions.RemoteResourceNotFound as e:
+    else:
         logger.exception("download failed")
         resp['message'] = str(e)
         resp['loaded'] = False
