@@ -13,10 +13,6 @@ RUN apt update && \
 # Install packages with binary dependencies through conda
 RUN conda config --add channels conda-forge && conda install matplotlib netCDF4 numpy pandas jupyter notebook pyproj
 
-# Copy the mount command to the proper directory
-COPY scripts/mount-b2drop /etc/init.d/mount-b2drop
-# Copy the logging code to the home directory
-COPY scripts/b-log .b-log
 COPY scripts/startup.sh .
 
 RUN echo ". ~/.b-log" >> ~/.bashrc
