@@ -74,7 +74,6 @@ def load_webdav():
     tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
     local_path = pathlib.Path(tmp_dir) / remote_path.name
 
-    print(options)
     client = webdav3.client.Client(options)
     client.http_header['list'].append('Authorization: Bearer')
     # for  debuggin show the list of files
