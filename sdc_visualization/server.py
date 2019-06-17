@@ -419,6 +419,8 @@ def create_app():
     """Create an app."""
 
     app = Flask(__name__.split('.')[0])
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+
     app.register_blueprint(blueprint)
     # make sure file is closed
     # app.teardown_appcontext(close_ds)
