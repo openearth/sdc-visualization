@@ -17,7 +17,7 @@ import pandas as pd
 
 import webdav3.client
 
-from flask import Blueprint, Flask, jsonify, session, current_app, request, g
+from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
 
 from sdc_visualization.ds import get_ds, close_ds
@@ -45,12 +45,16 @@ def home():
 def login():
     """Login"""
     session['username'] = request.form['username']
-    return jsonify({"result": "ok", "message": "user logged in"})
+    session['password'] = request.form['password']
+    session['url'] = request.form['url']
+    return redirect('/')
 
 @blueprint.route('/logout', methods=['POST'])
 def logout():
     # remove the username from the session if it's there
     session.pop('username', None)
+    session.pop('password', None)
+    session.pop('url', None)
     return jsonify({"result": "ok", "message": "user logged out"})
 
 @blueprint.route('/api/load-webdav', methods=['POST'])
