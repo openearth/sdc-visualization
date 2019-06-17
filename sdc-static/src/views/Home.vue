@@ -2,6 +2,28 @@
 <div>
     <v-container fluid>
         <v-layout pa-3>
+            <v-flex sm6 pa-3>
+                <v-card>
+                    <v-img src="mapbox.png"></v-img>
+                    <div>
+                        <v-card-title>
+                            <div>
+                                <h2>Visualization</h2>
+                                <div>Create visualizations on the map</div>
+                            </div>
+                        </v-card-title>
+
+                    </div>
+                    <v-card-actions>
+                        <v-btn
+                            flat
+                            href="#/visualization"
+                            >
+                            Go
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-flex>
             <v-flex sm3 pa-3>
                 <v-card pa-3>
                     <v-img src="form.png"></v-img>
@@ -41,7 +63,6 @@
                         <v-btn
                             flat
                             href="#/file-selector"
-                            :disabled="!$store.state.credentials"
                             :color="$store.state.metadata ? '' : 'primary'"
                             >
                             Go
@@ -49,51 +70,7 @@
                     </v-card-actions>
                 </v-card>
             </v-flex>
-            <v-flex sm3 pa-3>
-                <v-card>
-                    <v-img src="mapbox.png"></v-img>
-                    <div>
-                        <v-card-title>
-                            <div>
-                                <h2>Visualization</h2>
-                                <div>Create visualizations on the map</div>
-                            </div>
-                        </v-card-title>
 
-                    </div>
-                    <v-card-actions>
-                        <v-btn
-                            flat
-                            href="#/visualization"
-                            :disabled="!$store.state.credentials"
-                            >
-                            Go
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-flex>
-            <v-flex sm3 pa-3>
-                <v-card>
-                    <v-img src="nav_logo.svg"></v-img>
-                    <div>
-                        <v-card-title>
-                            <div>
-                                <h2>Notebook</h2>
-                                <div>Run a visualization notebook that allows you to connect to your b2drop files.</div>
-                            </div>
-                        </v-card-title>
-
-                    </div>
-                    <v-card-actions>
-                        <v-btn
-                            flat
-                            href="/notebook"
-                            >
-                            Go
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-flex>
         </v-layout>
     </v-container>
     <v-snackbar

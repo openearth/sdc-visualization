@@ -1,9 +1,9 @@
 <template>
 <div id="map" >
     <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
-        <v-card v-if="hoverFeature">
+        <v-card v-if="series && series.meta">
             <v-card-title>
-                <h2>CDI ID: {{ hoverFeature.properties.cdi_id }}</h2>
+                <h2 >CDI ID: {{ series.meta.cdi_id }}</h2>
             </v-card-title>
         </v-card>
       <chart-component :date-range="daterange" :series="series">
@@ -36,6 +36,7 @@
       :center="[6.082391473108373, 42.787369913791025]"
       :zoom="6.014224349175116"
       :pitch="60"
+      :min-zoom="6"
       :bearing="-0.7939713170276262"
       id="map"
       ref="map"

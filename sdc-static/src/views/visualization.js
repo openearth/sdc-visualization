@@ -9,6 +9,8 @@ import DepthSlider from '@/components/DepthSlider'
 import ChartComponent from '@/components/ChartComponent'
 import store from '@/store.js'
 
+import layers from './layers.json'
+
 
 
 export default {
@@ -25,8 +27,8 @@ export default {
             plotdrawer: true,
             map: null,
             end: 2017,
-            begin: 2007,
-            daterange: [2007, 2017],
+            begin: 2000,
+            daterange: [2016, 2017],
             timerange: [],
             graphData: {time: [], data: []},
             hoverFeature: null,
@@ -41,63 +43,44 @@ export default {
         // by default only load last year
         this.$store.commit('requestYear', this.end)
         // now we can request to load  layer data
-        this.loadLayerData()
-            .then(() => {
-                this.loadLayers()
-            })
-        this.$refs.timeslider.$on('time-extent-update', (event) => {
 
+        this.$refs.timeslider.$on('time-extent-update', (event) => {
             this.daterange = [
                 _.toInteger(event.from_pretty),
                 _.toInteger(event.to_pretty)
             ]
-            let range = _.range(this.daterange[0], this.daterange[1] + 1)
-            _.each(range, (year) => {
-                this.$store.commit('requestYear', year)
-            })
-            this.loadLayerData()
-                .then(() => {
-                    this.loadLayers()
-                })
-            console.log('daterange',  this.daterange, event)
-            this.showLayer(event.from_pretty, event.to_pretty)
+            this.setFilter()
         })
         this.map = this.$refs.map.map
         this.map.on('load', () => {
-            this.map.addLayer({
-                "id": `point_layer`,
-                "type": "circle",
-                "source":
-                {
-                    "data": {type: 'FeatureCollection', features: []},
-                    "type": "geojson"
-                },
-                "layout": {},
-                "paint": {
-                    'circle-color': 'hsla(180, 100%, 80%, 0.49)' ,
-                }
+            this.map.addSource("sdc-med-profiles", {
+                "url": "mapbox://siggyf.sdc-med-profiles",
+                "type": "vector"
             })
+            // add the hover layers
+            this.map.addSource('point-layer', {
+                "data": {type: 'FeatureCollection', features: []},
+                "type": "geojson"
+            })
+            layers.forEach(layer => {
+                this.map.addLayer(layer)
+            })
+
             this.map.on('mousemove', (e) => {
                 let year = this.daterange[1]
                 let yearRange = _.range(this.daterange[0], this.daterange[1])
-                let layers = _.map(yearRange, (year) => `point_${year}`)
                 // set bbox as 5px reactangle area around clicked point
                 let buffer = 2
                 let bbox = [[e.point.x - buffer, e.point.y - buffer], [e.point.x + buffer, e.point.y + buffer]]
-                if(this.map.getSource(`point_${year}`)) {
-                    let features = this.map.queryRenderedFeatures(bbox, { layers: layers })
-                    this.map.getSource('point_layer').setData({type: 'FeatureCollection', features: features})
-                    if (features.length) {
-                        this.hoverFeature = _.first(features)
-                    } else {
-                        this.hoverFeature = null
-                    }
+                let features = this.map.queryRenderedFeatures(bbox, { layers: ['circles'] })
+                this.map.getSource('point-layer').setData({type: 'FeatureCollection', features: features})
+                if (features.length) {
+                    this.hoverFeature = _.first(features)
+                } else {
+                    this.hoverFeature = null
                 }
             })
-            this.map.on('mouseover', 'point_layer', (e) => {
-                console.log('mouseover', e)
-            })
-            this.map.on('click', 'point_layer', (e) => {
+            this.map.on('click', 'point-layer', (e) => {
                 console.log('click', e)
                 if (_.isNil(this.hoverFeature)) {
                     return
@@ -105,6 +88,7 @@ export default {
                 this.$store.commit('feature', this.hoverFeature)
                 this.loadFeature()
             })
+            this.setFilter()
         })
     },
     watch: {
@@ -146,6 +130,15 @@ export default {
             })
 
         },
+        setFilter () {
+            let filter = [
+                'all',
+                ['>=', 'year', this.daterange[0]],
+                ['<=',  'year', this.daterange[1]]
+            ]
+            this.map.setFilter('heatmap', filter)
+            this.map.setFilter('circles', filter)
+        },
         getTimeRange() {
             fetch(`${store.state.serverUrl}/api/extent`, {
                 method: "GET"
@@ -157,26 +150,6 @@ export default {
                     this.extent = response.time
                 })
 
-        },
-        showLayer(from, to){
-            var range = _.range(this.end, this.begin - 1, -1)
-            var years = _.range(to, from - 1, -1)
-            console.log('years', years)
-            range.forEach((year) => {
-                var mapLayer = this.map.getLayer(`heatmap_${year}`)
-                console.log('mapLayer', mapLayer)
-                if(mapLayer !== undefined){
-                    console.log(years, year, years.indexOf(year) >= 0, years.includes(year))
-                    if(years.includes(year)){
-                        this.map.setPaintProperty( `heatmap_${year}`, 'heatmap-opacity', 1)
-                        // this.map.setPaintProperty( `point_${year}`, 'circle-opacity', 1)
-
-                    } else {
-                        this.map.setPaintProperty( `heatmap_${year}`, 'heatmap-opacity', 0)
-                        this.map.setPaintProperty( `point_${year}`, 'circle-opacity', 0)
-                    }
-                }
-            })
         }
     }
 }
