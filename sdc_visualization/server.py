@@ -19,7 +19,6 @@ import webdav3.client
 
 from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
-from flask_talisman import Talisman
 
 from sdc_visualization.ds import get_ds, close_ds
 
@@ -48,7 +47,7 @@ def login():
     session['username'] = request.form['username']
     session['password'] = request.form['password']
     session['url'] = request.form['url']
-    return redirect('/')
+    return jsonify({"ok":  "true"})
 
 
 @blueprint.route('/logout', methods=['POST'])
@@ -420,6 +419,8 @@ def create_app():
     """Create an app."""
 
     app = Flask(__name__.split('.')[0])
+    # TODO: get this from docker secret /run/secret
+    app.secret_key = os.urandom(16)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 
@@ -429,9 +430,6 @@ def create_app():
     # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
-    Talisman(app)
 
-    # TODO: get this from docker secret /run/secret
-    app.secret_key = os.urandom(16)
 
     return app
