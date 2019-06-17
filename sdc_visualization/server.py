@@ -67,7 +67,6 @@ def load_webdav():
         'webdav_password': session['password'],
         'webdav_hostname': session['url']
     }
-    filename = 'viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
     remote_path = pathlib.Path(
         filename
     )
