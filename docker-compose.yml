@@ -37,9 +37,6 @@ services:
     devices:
       - "/dev/fuse"
     environment:
-      - WEBDAV_URL=https://nc.seadatacloud.ml/remote.php/webdav
-      - WEBDAV_USERNAME=USER
-      - WEBDAV_PASSWORD=PASSWORD
       - SYS_ADMIN
     ports:
       - "5000" # no exposure to outside, no SSL (nginx handles that)
