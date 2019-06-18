@@ -10,7 +10,7 @@ def get_ds():
         filename = current_app.filename
 
     # overwrite  with default
-    filename = 'data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    filename = 'app/data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
     ds = load_dataset(filename)
 
     return ds
