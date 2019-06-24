@@ -8,6 +8,7 @@ import tempfile
 import pathlib
 import shutil
 import os
+import functools
 
 import netCDF4
 import numpy as np
@@ -19,6 +20,7 @@ import webdav3.client
 
 from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
+import flask.json
 
 from sdc_visualization.ds import get_ds, close_ds
 
@@ -226,61 +228,31 @@ def extent():
     return jsonify(resp)
 
 
+@functools.lru_cache()
+def get_cdi_ids():
+    ds = get_ds()
+    # this takes 2 seconds
+    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
+    return cdi_ids
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @cross_origin()
 def get_timeseries():
     """Return timeseries for point data"""
-    lon_i = request.values.get("lon")
-    lat_i = request.values.get("lat")
 
-    cdi_id  = request.values.get("cdi_id")
+    cdi_id = request.values.get("cdi_id")
+    cdi_id = str(cdi_id)
 
-    if (lon_i is not None and lat_i is not None):
-        lon_i = float(lon_i)
-        lat_i = float(lat_i)
-    elif cdi_id is not None:
-        cdi_id = str(cdi_id)
-    else:
-        raise ValueError("Invalid input")
-
-    """
-    read some variables and return an open file handle,
-    based on data selection.
-    """
     ds = get_ds()
     if ds is None:
         return jsonify({
             'error': 'data not loaded'
         })
 
-    if 'lat' in ds.variables:
-        station_lat = ds['lat'][:]
-    elif 'latitude' in ds.variables:
-        station_lat = ds['latitude'][:]
-    if 'lon' in ds.variables:
-        station_lon = ds['lon'][:]
-    elif 'longitude' in ds.variables:
-        station_lon = ds['longitude'][:]
+    cdi_ids = get_cdi_ids()
 
-    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
-
-    # convert to vector
-    if (lon_i is not None and lat_i is not None):
-        lon = np.zeros_like(station_lon) + lon_i
-        lat = np.zeros_like(station_lat) + lat_i
-
-        wgs84 = pyproj.Geod(ellps='WGS84')
-        _, _, distance = wgs84.inv(
-            lon, lat,
-            station_lon, station_lat
-        )
-        idx = distance.argmin()
-    elif cdi_id is not None:
-        # get the first
-        idx = np.argmax(cdi_ids == cdi_id)
-    else:
-        raise ValueError("Invalid input still....")
+    # get the first
+    idx = np.argmax(cdi_ids == cdi_id)
 
     var_names = [
         name
@@ -304,14 +276,37 @@ def get_timeseries():
     date_units = ds.variables['date_time'].units
     date = netCDF4.num2date(date_nums, date_units)
     records = json.loads(df.to_json(orient='records'))
+
+    lon = ds.variables['longitude'][idx]
+    lat = ds.variables['latitude'][idx]
+
+    import ipdb
+    meta_var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if name.startswith('metavar') and not '_' in name
+    ]
+    meta_vars = {}
+
+    for var_name in meta_var_names:
+        var = ds.variables[var_name]
+        if var.dtype == 'S1' and len(var.shape) > 1:
+            meta_vars[var.long_name] = str(netCDF4.chartostring(var[idx]))
+        else:
+            meta_vars[var.long_name] = var[idx]
+
     ds.close()
+    meta_vars.update({
+            "date": date.isoformat(),
+            "cdi_id": cdi_id,
+            "lon": lon,
+            "lat": lat
+    })
 
     response = {
         "data": records,
-        "meta": {
-            "date": date.isoformat(),
-            "cdi_id": str(cdi_ids[idx])
-        }
+        "meta": meta_vars
     }
     return jsonify(response)
 
@@ -431,5 +426,17 @@ def create_app():
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 
-
+    class JsonCustomEncoder(flask.json.JSONEncoder):
+        """encode numpy objects"""
+        def default(self, obj):
+            if isinstance(obj, (np.ndarray, np.number)):
+                return obj.tolist()
+            elif isinstance(obj, (complex, np.complex)):
+                return [obj.real, obj.imag]
+            elif isinstance(obj, set):
+                return list(obj)
+            elif isinstance(obj, bytes):  # pragma: py3
+                return obj.decode()
+            return json.JSONEncoder.default(self, obj)
+    app.json_encoder = JsonCustomEncoder
     return app
