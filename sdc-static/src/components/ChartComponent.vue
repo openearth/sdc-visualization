@@ -1,6 +1,6 @@
 <template>
 <div>
-    <v-container fluid>
+    <v-container pa-0 ma-0 fluid>
         <v-layout wrap align-center>
             <v-flex xs12>
                 <v-select
@@ -15,7 +15,7 @@
                     label="Y"
                     ></v-select>
             </v-flex>
-            <v-flex xs12 v-show="series">
+            <v-flex xs12 v-show="series" pa-0>
                 <div id="chart-container">
                 </div>
             </v-flex>
@@ -31,6 +31,5 @@
 #chart-container{
     width: 360px;
     height: 300px;
-  margin: 20px;
 }
 </style>

@@ -75,13 +75,13 @@ export default {
                     }
                 },
                 xAxis: {
-                    min: _.min(this.xValues),
-                    max: _.max(this.xValues)
+                    // min: _.min(this.xValues),
+                    // max: _.max(this.xValues)
                 },
                 yAxis: {
-                    min: _.min(this.yValues),
-                    max: _.max(this.yValues),
-                    inverse: this.x === 'Depth'
+                    // min: _.min(this.yValues),
+                    // max: _.max(this.yValues),
+                    inverse: this.y === 'Depth'
                 },
                 series: [
                     {

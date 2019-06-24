@@ -3,11 +3,18 @@
     <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
         <v-card v-if="series && series.meta">
             <v-card-title>
-                <h2 >CDI ID: {{ series.meta.cdi_id }}</h2>
+                <h2>{{ series.meta.cdi_id }}</h2>
             </v-card-title>
+            <v-card-text>
+                <chart-component :date-range="daterange" :series="series">
+                </chart-component>
+                <table>
+                    <tr v-for="(value, key) in series.meta">
+                        <th>{{ key }}</th><td>{{ value }}</td>
+                    </tr>
+                </table>
+            </v-card-text>
         </v-card>
-      <chart-component :date-range="daterange" :series="series">
-      </chart-component>
     </v-navigation-drawer>
     <v-toolbar height="64px" fixed>
       <v-btn icon :to="{name: 'home'}">
