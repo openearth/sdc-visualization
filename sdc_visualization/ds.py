@@ -10,7 +10,11 @@ def get_ds():
         filename = current_app.filename
 
     # overwrite  with default
-    filename = 'app/data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    # TODO: get rid of this
+    if pathlib.Path('app').exists():
+        filename = 'app/data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    else:
+        filename = 'data/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
     ds = load_dataset(filename)
 
     return ds
