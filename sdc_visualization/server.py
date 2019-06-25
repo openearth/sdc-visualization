@@ -280,7 +280,6 @@ def get_timeseries():
     lon = ds.variables['longitude'][idx]
     lat = ds.variables['latitude'][idx]
 
-    import ipdb
     meta_var_names = [
         name
         for name, var
