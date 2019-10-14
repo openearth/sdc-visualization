@@ -1,15 +1,16 @@
-import { mapActions, mapState } from 'vuex'
+import { mapactions, mapstate } from 'vuex'
 
-// TODO: use proper date formatting
+// todo: use proper date formatting
 // import moment from 'moment'
 import _ from 'lodash'
 
-import TimeSlider from '@/components/TimeSlider'
-import DepthSlider from '@/components/DepthSlider'
-import ChartComponent from '@/components/ChartComponent'
+import timeslider from '@/components/TimeSlider'
+import depthslider from '@/components/DepthSlider'
+import chartcomponent from '@/components/ChartComponent'
 import store from '@/store.js'
 
-import layers from './layers.json'
+import layers from './ts-layers.json'
+import sources from  './ts-sources.json'
 
 
 
@@ -17,11 +18,12 @@ export default {
     store,
     name: 'visualization',
     components: {
-        "v-time-slider": TimeSlider,
-        "v-depth-slider": DepthSlider,
-        "chart-component": ChartComponent
+        "v-time-slider": timeslider,
+        "v-depth-slider": depthslider,
+        "chart-component": chartcomponent
     },
     data () {
+
         return {
             menudrawer: false,
             plotdrawer: true,
@@ -30,40 +32,44 @@ export default {
             begin: 2000,
             daterange: [2016, 2017],
             timerange: [],
-            graphData: {time: [], data: []},
-            hoverFeature: null,
+            graphdata: {time: [], data: []},
+            hoverfeature: null,
             items: [
-                { title: 'Home', icon: 'dashboard' },
-                { title: 'About', icon: 'question_answer' }
+                { title: 'home', icon: 'dashboard' },
+                { title: 'about', icon: 'question_answer' }
             ],
         }
     },
     mounted() {
-        this.getTimeRange()
+        this.gettimerange()
         // by default only load last year
-        this.$store.commit('requestYear', this.end)
+        this.$store.commit('requestyear', this.end)
         // now we can request to load  layer data
 
         this.$refs.timeslider.$on('time-extent-update', (event) => {
             this.daterange = [
-                _.toInteger(event.from_pretty),
-                _.toInteger(event.to_pretty)
+                _.tointeger(event.from_pretty),
+                _.tointeger(event.to_pretty)
             ]
-            this.setFilter()
+            this.setfilter()
         })
         this.map = this.$refs.map.map
         this.map.on('load', () => {
-            this.map.addSource("sdc-med-profiles", {
+
+            this.map.addsource("sdc-med-profiles", {
                 "url": "mapbox://siggyf.sdc-med-profiles",
                 "type": "vector"
             })
+            _.foreach(sources, (source, id) => {
+                this.map.addsource(id,  source)
+            })
             // add the hover layers
-            this.map.addSource('point-layer', {
-                "data": {type: 'FeatureCollection', features: []},
+            this.map.addsource('point-layer', {
+                "data": {type: 'featurecollection', features: []},
                 "type": "geojson"
             })
-            layers.forEach(layer => {
-                this.map.addLayer(layer)
+            layers.foreach(layer => {
+                this.map.addlayer(layer)
             })
 
             this.map.on('mousemove', (e) => {
@@ -72,7 +78,7 @@ export default {
                 // set bbox as 5px reactangle area around clicked point
                 let buffer = 2
                 let bbox = [[e.point.x - buffer, e.point.y - buffer], [e.point.x + buffer, e.point.y + buffer]]
-                let features = this.map.queryRenderedFeatures(bbox, { layers: ['circles'] })
+                let features = this.map.queryRenderedFeatures(bbox, { layers: this.circleLayers })
                 this.map.getSource('point-layer').setData({type: 'FeatureCollection', features: features})
                 if (features.length) {
                     this.hoverFeature = _.first(features)
@@ -100,7 +106,22 @@ export default {
         ...mapState([
             'layers',
             'series'
-        ])
+        ]),
+        circleLayers () {
+            let circleLayers = layers.filter(
+                (layer) => layer.type === 'circle' && layer['source-layer']
+            )
+            circleLayers = circleLayers.map(x => x.id)
+            return circleLayers
+        },
+        heatmapLayers () {
+            let circleLayers = layers.filter(
+                (layer) => layer.type === 'circle' && layer['source-layer']
+            )
+            circleLayers = circleLayers.map(x => x.id)
+            return circleLayers
+        }
+
     },
     methods: {
         ...mapActions([
@@ -136,8 +157,12 @@ export default {
                 ['>=', 'year', this.daterange[0]],
                 ['<=',  'year', this.daterange[1]]
             ]
-            this.map.setFilter('heatmap', filter)
-            this.map.setFilter('circles', filter)
+            _.forEach(this.circleLayers, (layer) => {
+                this.map.setFilter(layer, filter)
+            })
+            _.forEach(this.heatmapLayers, (layer) => {
+                this.map.setFilter(layer, filter)
+            })
         },
         getTimeRange() {
             fetch(`${store.state.serverUrl}/api/extent`, {
