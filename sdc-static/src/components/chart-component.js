@@ -111,6 +111,19 @@ export default {
         getVariables() {
 
         },
+        saveImage () {
+            let src = this.graph.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            })
+            let download = document.createElement('a')
+            download.href = src
+            download.download = 'screenshot.png'
+            download.click();
+            //  let img = new Image();
+            // img.src = src
+
+        },
         createGraph() {
             var dom = document.getElementById("chart-container")
             this.graph = echarts.init(dom)
