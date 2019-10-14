@@ -1,6 +1,7 @@
 import echarts from 'echarts'
 import Vue from 'vue'
 import _ from 'lodash'
+import Papa from 'papaparse'
 
 // TODO: replace this with vue-echart
 export default {
@@ -103,12 +104,21 @@ export default {
         }
     },
     mounted() {
-        this.getVariables()
         this.createGraph("Trajectory")
 
     },
     methods: {
-        getVariables() {
+        saveCsv() {
+            let csv = Papa.unparse(this.series)
+            let download = document.createElement('a')
+            let encodedUri = encodeURI(csv)
+            let blob = new Blob([csv]);
+            let href = window.URL.createObjectURL(blob, {type: "text/plain"});
+            console.log('csv', href)
+            download.href = href
+            download.download = 'data.csv'
+            download.click();
+
 
         },
         saveImage () {

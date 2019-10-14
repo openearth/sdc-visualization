@@ -20,7 +20,7 @@
                 </div>
             </v-flex>
             <v-flex>
-                <v-btn><v-icon>cloud_download</v-icon></v-btn>
+                <v-btn @click="saveCsv"><v-icon>cloud_download</v-icon></v-btn>
                 <v-btn @click="saveImage"><v-icon>image</v-icon></v-btn>
             </v-flex>
         </v-layout>
