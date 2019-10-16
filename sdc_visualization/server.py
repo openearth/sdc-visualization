@@ -232,7 +232,13 @@ def extent():
 def get_cdi_ids():
     ds = get_ds()
     # this takes 2 seconds
-    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
+    for var_name,  var  in ds.variables.items():
+        if var.long_name == 'LOCAL_CDI_ID':
+            break
+    else:
+        raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
+    logger.info('variable  cdi-id {}'.format(var_name))
+    cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
     return cdi_ids
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
@@ -243,7 +249,9 @@ def get_timeseries():
     cdi_id = request.values.get("cdi_id")
     cdi_id = str(cdi_id)
 
-    ds = get_ds()
+    dataset = request.values.get("dataset")
+
+    ds = get_ds(dataset=dataset)
     if ds is None:
         return jsonify({
             'error': 'data not loaded'
@@ -265,7 +273,10 @@ def get_timeseries():
     variables = {}
     for var_name in var_names:
         var = ds.variables[var_name]
-        variables[var.long_name] = var[idx]
+        try:
+            variables[var.long_name] = var[idx]
+        except IndexError:
+            logger.exception("failed to index {} with index {}".format(var,  idx))
 
     df = pd.DataFrame(data=variables)
     # get rid of missing data
