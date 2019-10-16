@@ -195,7 +195,12 @@ export default new Vuex.Store({
         },
         loadFeature({state, commit}) {
             let feature = state.feature
-            let url = `${state.serverUrl}/api/get_timeseries?cdi_id=${feature.properties.cdi_id}`
+            console.log('loading', feature)
+            let searchParams = new URLSearchParams()
+            searchParams.append('cdi_id', feature.properties.cdi_id)
+            searchParams.append('dataset', feature.properties.dataset)
+            let searchString = searchParams.toString()
+            let url = `${state.serverUrl}/api/get_timeseries?${searchParams}`
             return fetch(url)
                 .then((res) => {
                     return res.json();
