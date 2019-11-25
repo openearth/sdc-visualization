@@ -1,15 +1,15 @@
 <template>
 <div id="map" >
-    <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
+    <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotDrawer">
         <v-card v-if="series && series.meta">
             <v-card-title>
                 <h2>{{ series.meta.cdi_id }}</h2>
             </v-card-title>
             <v-card-text>
-                <chart-component :date-range="daterange" :series="series">
+                <chart-component :date-range="dateRange" :series="series">
                 </chart-component>
                 <table>
-                    <tr v-for="(value, key) in series.meta">
+                    <tr v-for="(value, key) in series.meta"  :key="key">
                         <th>{{ key }}</th><td>{{ value }}</td>
                     </tr>
                 </table>
@@ -22,7 +22,7 @@
       </v-btn>
       <v-toolbar-title>SeaDataCloud</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon @click.stop="plotdrawer = !plotdrawer">
+      <v-btn icon @click.stop="plotDrawer = !plotDrawer">
         <v-icon>show_chart</v-icon>
       </v-btn>
       <v-btn icon @click="load">

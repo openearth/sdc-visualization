@@ -1,0 +1,26 @@
+{
+  "sdc-ts-arcticocean-mb": {
+    "url": "mapbox://siggyf.sdc-ts-arcticocean-mb",
+    "type": "vector"
+  },
+  "sdc-ts-atlantic-mb": {
+    "url": "mapbox://siggyf.sdc-ts-atlantic-mb",
+    "type": "vector"
+  },
+  "sdc-ts-balticsea-mb": {
+    "url": "mapbox://siggyf.sdc-ts-balticsea-mb",
+    "type": "vector"
+  },
+  "sdc-ts-blacksea-mb": {
+    "url": "mapbox://siggyf.sdc-ts-blacksea-mb",
+    "type": "vector"
+  },
+  "sdc-ts-medsea-mb": {
+    "url": "mapbox://siggyf.sdc-ts-medsea-mb",
+    "type": "vector"
+  },
+  "sdc-ts-north_sea-mb": {
+    "url": "mapbox://siggyf.sdc-ts-north_sea-mb",
+    "type": "vector"
+  }
+}
