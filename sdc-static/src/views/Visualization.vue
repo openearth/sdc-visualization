@@ -34,6 +34,10 @@
           ref="timeslider"
           show-play
           interval="years"
+          :domain="domain"
+          :extent.sync="extent"
+          :range.sync="range"
+          @update:range="setFilter"
           >
         </v-time-slider>
     </div>
