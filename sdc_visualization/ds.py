@@ -3,13 +3,30 @@ import pathlib
 from flask import current_app, g
 import netCDF4
 
-def get_ds():
+def get_ds(dataset=None):
     """get the dataset"""
-    if not hasattr(current_app, 'filename'):
-        return None
 
-    ds = load_dataset(current_app.filename)
 
+    data_dirs = [
+        pathlib.Path('~/data/odv').expanduser(),
+        pathlib.Path('app/data'),
+        pathlib.Path('data')
+    ]
+    for data_dir in data_dirs:
+        if data_dir.is_dir():
+            break
+    else:
+        raise ValueError('data directory not found. Tried {}'.format(data_dirs))
+
+    if dataset is not None:
+        filename =  data_dir  / dataset
+    else:
+        if hasattr(current_app, 'filename'):
+            # TODO: where does this come from?
+            filename = data_dir /  current_app.filename
+        else:
+            filename = data_dir  / 'data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    ds = load_dataset(filename)
     return ds
 
 

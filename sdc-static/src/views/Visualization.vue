@@ -1,26 +1,28 @@
 <template>
 <div id="map" >
-    <!-- <div id="d-slider">
-         <v-depth-slider>
-         </v-depth-slider>
-    </div> -->
-    <!-- <v-navigation-drawer mini-variant id="menudrawer" hide-overlay app v-model="menudrawer">
-
-         </v-navigation-drawer> -->
-    <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotdrawer">
-        <v-card v-if="hoverFeature">
+    <v-navigation-drawer right id="plotdrawer" width="400" hide-overlay app v-model="plotDrawer">
+        <v-card v-if="series && series.meta">
             <v-card-title>
-                <h2>CDI ID: {{ hoverFeature.properties.cdi_id }}</h2>
+                <h2>{{ series.meta.cdi_id }}</h2>
             </v-card-title>
+            <v-card-text>
+                <chart-component :date-range="dateRange" :series="series">
+                </chart-component>
+                <table>
+                    <tr v-for="(value, key) in series.meta"  :key="key">
+                        <th>{{ key }}</th><td>{{ value }}</td>
+                    </tr>
+                </table>
+            </v-card-text>
         </v-card>
-      <chart-component :date-range="daterange" :graph-data="graphData">
-      </chart-component>
     </v-navigation-drawer>
     <v-toolbar height="64px" fixed>
-      <v-toolbar-side-icon @click.stop="menudrawer = !menudrawer"></v-toolbar-side-icon>
+      <v-btn icon :to="{name: 'home'}">
+        <v-icon>home</v-icon>
+      </v-btn>
       <v-toolbar-title>SeaDataCloud</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon @click.stop="plotdrawer = !plotdrawer">
+      <v-btn icon @click.stop="plotDrawer = !plotDrawer">
         <v-icon>show_chart</v-icon>
       </v-btn>
       <v-btn icon @click="load">
@@ -41,6 +43,7 @@
       :center="[6.082391473108373, 42.787369913791025]"
       :zoom="6.014224349175116"
       :pitch="60"
+      :min-zoom="6"
       :bearing="-0.7939713170276262"
       id="map"
       ref="map"

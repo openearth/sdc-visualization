@@ -16,6 +16,7 @@
     "ion-rangeslider": "<2.3.0",
     "mapbox-gl": "^0.50.0",
     "moment": "^2.24.0",
+    "papaparse": "^5.1.0",
     "vue": "^2.6.9",
     "vue-router": "^3.0.2",
     "vue2-filters": "^0.6.0",

@@ -1,0 +1,81 @@
+[
+    {
+        "id": "heatmap",
+        "type": "heatmap",
+        "source": "sdc-med-profiles",
+        "source-layer": "sdc-med-profiles",
+        "layout": {},
+        "paint": {
+            "heatmap-opacity": 1,
+            "heatmap-color": [
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0,
+                "rgba(0, 0, 255, 0)",
+                0.3,
+                "hsla(180, 100%, 50%, 0.49)",
+                1,
+                "hsl(185, 100%, 100%)"
+            ],
+            "heatmap-radius": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                4,
+                1,
+                22,
+                15
+            ]
+        }
+    },
+    {
+        "id": "circles",
+        "type": "circle",
+        "source": "sdc-med-profiles",
+        "source-layer": "sdc-med-profiles",
+        "layout": {},
+        "paint": {
+            "circle-color": "hsla(185, 100%, 100%, 0.2)",
+            "circle-radius": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                6,
+                1.5,
+                22,
+                10
+            ]
+        }
+    },
+    {
+        "id": "point-layer",
+        "type": "circle",
+        "source": "point-layer",
+        "layout": {},
+        "paint": {
+            "circle-color": "hsla(180, 100%, 80%, 0.49)"
+        }
+    },
+    {
+        "id": "point-layer-text",
+        "type": "symbol",
+        "source": "point-layer",
+        "layout": {
+            "text-field": ["get", "cdi_id"],
+            "text-padding": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                0,
+                2,
+                22,
+                2
+            ]
+        },
+        "paint": {
+            "text-color": "hsl(0, 0%, 100%)",
+            "text-opacity": 1
+        }
+    }
+]

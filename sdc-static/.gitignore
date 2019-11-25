@@ -4,6 +4,9 @@ node_modules
 
 src/views/user.json
 
+# override python settings
+!lib
+
 # local env files
 .env.local
 .env.*.local

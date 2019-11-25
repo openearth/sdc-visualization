@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:s="http://sabredav.org/ns" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+    <d:response>
+        <d:href>/remote.php/webdav/viz/</d:href>
+        <d:propstat>
+            <d:prop>
+                <d:getlastmodified>Tue, 07 May 2019 19:16:25 GMT</d:getlastmodified>
+                <d:resourcetype>
+                    <d:collection/>
+                </d:resourcetype>
+                <d:quota-used-bytes>559895942</d:quota-used-bytes>
+                <d:quota-available-bytes>-3</d:quota-available-bytes>
+                <d:getetag>&quot;5cd1d98938880&quot;</d:getetag>
+            </d:prop>
+            <d:status>HTTP/1.1 200 OK</d:status>
+        </d:propstat>
+    </d:response>
+    <d:response>
+        <d:href>/remote.php/webdav/viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc</d:href>
+        <d:propstat>
+            <d:prop>
+                <d:getlastmodified>Tue, 07 May 2019 19:16:23 GMT</d:getlastmodified>
+                <d:getcontentlength>559895942</d:getcontentlength>
+                <d:resourcetype/>
+                <d:getetag>&quot;680770691655d36f480b18daae55dbac&quot;</d:getetag>
+                <d:getcontenttype>application/octet-stream</d:getcontenttype>
+            </d:prop>
+            <d:status>HTTP/1.1 200 OK</d:status>
+        </d:propstat>
+        <d:propstat>
+            <d:prop>
+                <d:quota-used-bytes/>
+                <d:quota-available-bytes/>
+            </d:prop>
+            <d:status>HTTP/1.1 404 Not Found</d:status>
+        </d:propstat>
+    </d:response>
+</d:multistatus>

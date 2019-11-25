@@ -7,6 +7,8 @@ import json
 import tempfile
 import pathlib
 import shutil
+import os
+import functools
 
 import netCDF4
 import numpy as np
@@ -14,8 +16,11 @@ import geojson
 import pyproj
 import pandas as pd
 
-from flask import Blueprint, Flask, jsonify, current_app, request, g
+import webdav3.client
+
+from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
+import flask.json
 
 from sdc_visualization.ds import get_ds, close_ds
 
@@ -37,6 +42,74 @@ def home():
     """Home page."""
     return 'home'
 
+
+@blueprint.route('/login', methods=['POST'])
+def login():
+    """Login"""
+    session['username'] = request.form['username']
+    session['password'] = request.form['password']
+    session['url'] = request.form['url']
+    # redirect to this directory.
+    return redirect('https://orca.dkrz.de:8003')
+
+
+@blueprint.route('/logout', methods=['POST'])
+def logout():
+    # remove the username from the session if it's there
+    session.pop('username', None)
+    session.pop('password', None)
+    session.pop('url', None)
+    return jsonify({"result": "ok", "message": "user logged out"})
+
+@blueprint.route('/api/load-webdav', methods=['POST'])
+def load_webdav():
+    req_data = request.get_json()
+    filename = req_data['filename']
+    options = {
+        'webdav_login': session['username'],
+        'webdav_password': session['password'],
+        'webdav_hostname': session['url']
+    }
+    remote_path = pathlib.Path(
+        filename
+    )
+    tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
+    local_path = pathlib.Path(tmp_dir) / remote_path.name
+
+    client = webdav3.client.Client(options)
+    client.http_header['list'].append('Authorization: Bearer')
+    # for  debuggin show the list of files
+    try:
+        ls = client.list()
+        resp = {'ls': ls}
+        ls_viz = client.list('viz')
+        resp['ls_viz'] = ls_viz
+    except webdav3.exceptions.RemoteResourceNotFound:
+        pass
+
+
+    # let's assume it works
+    resp["loaded"] = True
+    resp["local_path"] = str(local_path)
+    resp["remote_path"] = str(remote_path)
+
+    resp["check"] = client.check(remote_path=str(remote_path))
+
+    # if file exists
+    if resp['check']:
+        # split for debugging
+        args = dict(
+            local_path=str(local_path),
+            remote_path=str(remote_path)
+        )
+        client.download(**args)
+    else:
+        logger.exception("download failed")
+        resp['message'] = str(e)
+        resp['loaded'] = False
+
+    resp["filename"] = filename
+    return jsonify(resp)
 
 @blueprint.route('/api/load', methods=['POST'])
 @cross_origin()
@@ -155,61 +228,39 @@ def extent():
     return jsonify(resp)
 
 
+@functools.lru_cache()
+def get_cdi_ids():
+    ds = get_ds()
+    # this takes 2 seconds
+    for var_name,  var  in ds.variables.items():
+        if var.long_name == 'LOCAL_CDI_ID':
+            break
+    else:
+        raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
+    logger.info('variable  cdi-id {}'.format(var_name))
+    cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
+    return cdi_ids
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @cross_origin()
 def get_timeseries():
     """Return timeseries for point data"""
-    lon_i = request.values.get("lon")
-    lat_i = request.values.get("lat")
 
-    cdi_id  = request.values.get("cdi_id")
+    cdi_id = request.values.get("cdi_id")
+    cdi_id = str(cdi_id)
 
-    if (lon_i is not None and lat_i is not None):
-        lon_i = float(lon_i)
-        lat_i = float(lat_i)
-    elif cdi_id is not None:
-        cdi_id = str(cdi_id)
-    else:
-        raise ValueError("Invalid input")
+    dataset = request.values.get("dataset")
 
-    """
-    read some variables and return an open file handle,
-    based on data selection.
-    """
-    ds = get_ds()
+    ds = get_ds(dataset=dataset)
     if ds is None:
         return jsonify({
             'error': 'data not loaded'
         })
 
-    if 'lat' in ds.variables:
-        station_lat = ds['lat'][:]
-    elif 'latitude' in ds.variables:
-        station_lat = ds['latitude'][:]
-    if 'lon' in ds.variables:
-        station_lon = ds['lon'][:]
-    elif 'longitude' in ds.variables:
-        station_lon = ds['longitude'][:]
+    cdi_ids = get_cdi_ids()
 
-    cdi_ids = netCDF4.chartostring(ds.variables['metavar4'][:])
-
-    # convert to vector
-    if (lon_i is not None and lat_i is not None):
-        lon = np.zeros_like(station_lon) + lon_i
-        lat = np.zeros_like(station_lat) + lat_i
-
-        wgs84 = pyproj.Geod(ellps='WGS84')
-        _, _, distance = wgs84.inv(
-            lon, lat,
-            station_lon, station_lat
-        )
-        idx = distance.argmin()
-    elif cdi_id is not None:
-        # get the first
-        idx = np.argmax(cdi_ids == cdi_id)
-    else:
-        raise ValueError("Invalid input still....")
+    # get the first
+    idx = np.argmax(cdi_ids == cdi_id)
 
     var_names = [
         name
@@ -222,7 +273,10 @@ def get_timeseries():
     variables = {}
     for var_name in var_names:
         var = ds.variables[var_name]
-        variables[var.long_name] = var[idx]
+        try:
+            variables[var.long_name] = var[idx]
+        except IndexError:
+            logger.exception("failed to index {} with index {}".format(var,  idx))
 
     df = pd.DataFrame(data=variables)
     # get rid of missing data
@@ -233,14 +287,36 @@ def get_timeseries():
     date_units = ds.variables['date_time'].units
     date = netCDF4.num2date(date_nums, date_units)
     records = json.loads(df.to_json(orient='records'))
+
+    lon = ds.variables['longitude'][idx]
+    lat = ds.variables['latitude'][idx]
+
+    meta_var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if name.startswith('metavar') and not '_' in name
+    ]
+    meta_vars = {}
+
+    for var_name in meta_var_names:
+        var = ds.variables[var_name]
+        if var.dtype == 'S1' and len(var.shape) > 1:
+            meta_vars[var.long_name] = str(netCDF4.chartostring(var[idx]))
+        else:
+            meta_vars[var.long_name] = var[idx]
+
     ds.close()
+    meta_vars.update({
+            "date": date.isoformat(),
+            "cdi_id": cdi_id,
+            "lon": lon,
+            "lat": lat
+    })
 
     response = {
         "data": records,
-        "meta": {
-            "date": date.isoformat(),
-            "cdi_id": str(cdi_ids[idx])
-        }
+        "meta": meta_vars
     }
     return jsonify(response)
 
@@ -348,10 +424,29 @@ def create_app():
     """Create an app."""
 
     app = Flask(__name__.split('.')[0])
+    # TODO: get this from docker secret /run/secret
+    app.secret_key = os.urandom(16)
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+
+
+
     app.register_blueprint(blueprint)
     # make sure file is closed
     # app.teardown_appcontext(close_ds)
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 
+    class JsonCustomEncoder(flask.json.JSONEncoder):
+        """encode numpy objects"""
+        def default(self, obj):
+            if isinstance(obj, (np.ndarray, np.number)):
+                return obj.tolist()
+            elif isinstance(obj, (complex, np.complex)):
+                return [obj.real, obj.imag]
+            elif isinstance(obj, set):
+                return list(obj)
+            elif isinstance(obj, bytes):  # pragma: py3
+                return obj.decode()
+            return json.JSONEncoder.default(self, obj)
+    app.json_encoder = JsonCustomEncoder
     return app

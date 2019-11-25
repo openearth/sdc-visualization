@@ -75,6 +75,15 @@ export default {
                 })
 
             this.$router.push({name: 'home'})
+        },
+        load(filename) {
+            this.$store.commit('filename', filename)
+            this.loadData()
+                .then(() => {
+                    this.loadMetadata()
+                })
+
+            this.$router.push({name: 'home'})
         }
     }
 }
