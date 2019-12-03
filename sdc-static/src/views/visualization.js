@@ -7,12 +7,10 @@ import _ from 'lodash'
 import timeSlider from '@/components/TimeSlider'
 import depthSlider from '@/components/DepthSlider'
 import chartComponent from '@/components/ChartComponent'
+import mapSettings from '@/components/MapSettings'
 import store from '@/store.js'
-
 import layers from './ts-layers.json'
 import sources from  './ts-sources.json'
-
-
 
 export default {
     store,
@@ -20,11 +18,13 @@ export default {
     components: {
         "v-time-slider": timeSlider,
         "v-depth-slider": depthSlider,
-        "chart-component": chartComponent
+        "chart-component": chartComponent,
+        "map-settings": mapSettings
     },
     data () {
 
         return {
+            showMapSettings: false,
             menuDrawer: false,
             plotDrawer: true,
             map: null,
@@ -92,7 +92,6 @@ export default {
                 }
             })
             this.map.on('click', 'point-layer', (e) => {
-                console.log('click', e)
                 if (_.isNil(this.hoverFeature)) {
                     return
                 }
@@ -132,7 +131,7 @@ export default {
         ]),
         load () {
             // load demo data
-            const filename = '/remote.php/webdav/viz/data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+            const filename = '/remote.php/webdav/viz/data_from_SDN_2015-09_TS_MedSea_QC_done_v2.nc'
             this.$store.commit('filename', filename)
             this.loadData()
             this.$store.commit('requestYear', 2017)

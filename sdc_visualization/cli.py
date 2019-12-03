@@ -6,8 +6,8 @@ import click
 
 from sdc_visualization.server import create_app
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 @click.group()
 def cli():

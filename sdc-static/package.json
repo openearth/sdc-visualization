@@ -22,7 +22,7 @@
     "vue2-filters": "^0.6.0",
     "vue2mapbox-gl": "^0.4.50",
     "vuelidate": "^0.7.4",
-    "vuetify": "^1.5.11",
+    "vuetify": "^2.1.12",
     "vuex": "^3.1.0"
   },
   "devDependencies": {

@@ -120,6 +120,7 @@ def load():
     # the filename string
     filename = req_data.get('filename')
 
+    logger.debug(filename, pathlib.Path(filename).expanduser())
     # the expanded path
     filepath = pathlib.Path(filename).expanduser()
 
@@ -229,8 +230,8 @@ def extent():
 
 
 @functools.lru_cache()
-def get_cdi_ids():
-    ds = get_ds()
+def get_cdi_ids(dataset):
+    ds = get_ds(dataset)
     # this takes 2 seconds
     for var_name,  var  in ds.variables.items():
         if var.long_name == 'LOCAL_CDI_ID':
@@ -257,7 +258,7 @@ def get_timeseries():
             'error': 'data not loaded'
         })
 
-    cdi_ids = get_cdi_ids()
+    cdi_ids = get_cdi_ids(dataset=dataset)
 
     # get the first
     idx = np.argmax(cdi_ids == cdi_id)

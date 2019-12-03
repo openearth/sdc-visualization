@@ -14,20 +14,20 @@
     <v-btn-toggle v-model="state" mandatory v-if="showPlay">
       <!-- call play function so timer gets updated -->
       <!-- TODO: use buttons that stay pressed (lookup material design guideline) -->
-      <v-btn value="playing" flat @click.stop="play">
+      <v-btn value="playing" text @click.stop="play">
         <v-icon>fa-play</v-icon>
       </v-btn>
-      <v-btn value="paused" flat @click.stop="pause">
+      <v-btn value="paused" text @click.stop="pause">
         <v-icon>fa-pause</v-icon>
       </v-btn>
     </v-btn-toggle>
     <v-btn-toggle v-model="loop" v-if="showPlay">
       <!-- somehow this ends op as null/true instead of false/true -->
-      <v-btn :value="true" flat>
+      <v-btn :value="true" text>
         <v-icon>fa-repeat</v-icon>
       </v-btn>
     </v-btn-toggle>
-    <v-btn @click.stop="configDialog = true"  icon flat>
+    <v-btn @click.stop="configDialog = true"  icon text>
       <v-icon>fa-gear</v-icon>
     </v-btn>
 
@@ -60,8 +60,8 @@
               <template slot-scope="{ save, cancel }">
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn flat color="primary" @click.stop="startDateMenu = false">Cancel</v-btn>
-                  <v-btn flat color="primary" @click.stop="$refs.startDateMenu.save(startDate)">OK</v-btn>
+                  <v-btn text color="primary" @click.stop="startDateMenu = false">Cancel</v-btn>
+                  <v-btn text color="primary" @click.stop="$refs.startDateMenu.save(startDate)">OK</v-btn>
                 </v-card-actions>
               </template>
             </v-date-picker>
@@ -92,15 +92,15 @@
               <template slot-scope="{ save, cancel }">
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn flat color="primary" @click.stop="endDateMenu = false">Cancel</v-btn>
-                  <v-btn flat color="primary" @click.stop="$refs.endDateMenu.save(endDate)">OK</v-btn>
+                  <v-btn text color="primary" @click.stop="endDateMenu = false">Cancel</v-btn>
+                  <v-btn text color="primary" @click.stop="$refs.endDateMenu.save(endDate)">OK</v-btn>
                 </v-card-actions>
               </template>
             </v-date-picker>
           </v-menu>
         </v-card-text>
         <v-card-actions>
-          <v-btn flat color="primary" @click.stop="configDialog=false">Close</v-btn>
+          <v-btn text color="primary" @click.stop="configDialog=false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
