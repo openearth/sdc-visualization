@@ -241,6 +241,7 @@ def get_cdi_ids():
     cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
     return cdi_ids
 
+
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @cross_origin()
 def get_timeseries():

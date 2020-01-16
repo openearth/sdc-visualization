@@ -1,10 +1,12 @@
 """Console script for sdc_visualization."""
 import sys
 import logging
+import pathlib
 
 import click
 
 from sdc_visualization.server import create_app
+from sdc_visualization.conversion import odvnc2features
 
 
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +22,13 @@ def main(args=None):
                "sdc_visualization.cli.main")
     click.echo("See click documentation at http://click.pocoo.org/")
     return 0
+
+@cli.command()
+@click.argument('path')
+def nc2geojson(path):
+    click.echo("converting to geojson")
+    odvnc2features(pathlib.Path(path))
+    return
 
 @cli.command()
 @click.option('--debug', default=False, help='Use debug mode.', is_flag=True)
