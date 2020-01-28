@@ -21,6 +21,12 @@ COPY . ./app
 RUN pip install -r ./app/requirements.txt
 RUN pip install -e ./app
 
+VOLUME /data/public
+VOLUME /data/private
+VOLUME /data/work
+
+WORKDIR /data/work
+
 # Expose port 5000
 EXPOSE 5000
-CMD ./startup.sh
+CMD /root/startup.sh
