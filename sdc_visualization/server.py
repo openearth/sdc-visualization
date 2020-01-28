@@ -43,6 +43,21 @@ def home():
     return 'home'
 
 
+@blueprint.route('/sdc', methods=['POST'])
+def sdc():
+    """login with sdc method"""
+
+    # extract information from form and redirect
+    session['email'] = request.form['email']
+    session['b2drop_username'] = request.form['b2drop_username']
+    session['b2drop_password'] = request.form['b2drop_password']
+    session['b2drop_url'] = request.form['b2drop_url']
+    session['vre_URL'] = request.form['vre_URL']
+    # redirect to this directory.
+    return redirect('https://orca.dkrz.de:8003')
+
+
+
 @blueprint.route('/login', methods=['POST'])
 def login():
     """Login"""
@@ -59,6 +74,13 @@ def logout():
     session.pop('username', None)
     session.pop('password', None)
     session.pop('url', None)
+
+    session.pop('email', None)
+    session.pop('b2drop_username', None)
+    session.pop('b2drop_password', None)
+    session.pop('b2drop_url', None)
+    session.pop('vre_URL', None)
+
     return jsonify({"result": "ok", "message": "user logged out"})
 
 @blueprint.route('/api/load-webdav', methods=['POST'])
