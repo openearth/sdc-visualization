@@ -1,19 +1,24 @@
 import pathlib
+import logging
 
 from flask import current_app, g
 import netCDF4
+
+logger = logging.getLogger(__name__)
 
 def get_ds(dataset=None):
     """get the dataset"""
 
 
     data_dirs = [
+        pathlib.Path('/data/public'),
         pathlib.Path('~/data/odv').expanduser(),
         pathlib.Path('app/data'),
-        pathlib.Path('data')
+        pathlib.Path('data']
     ]
     for data_dir in data_dirs:
         if data_dir.is_dir():
+            logger.info('found  data in %s', data_dir)
             break
     else:
         raise ValueError('data directory not found. Tried {}'.format(data_dirs))
