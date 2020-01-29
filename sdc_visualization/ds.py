@@ -14,7 +14,7 @@ def get_ds(dataset=None):
         pathlib.Path('/data/public'),
         pathlib.Path('~/data/odv').expanduser(),
         pathlib.Path('app/data'),
-        pathlib.Path('data']
+        pathlib.Path('data')
     ]
     for data_dir in data_dirs:
         if data_dir.is_dir():
