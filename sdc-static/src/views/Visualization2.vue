@@ -5,6 +5,7 @@
           ref="timeslider"
           show-play
           interval="years"
+          @time-extent-update="timeExtentUpdate"
           >
         </v-time-slider>
     </div>
@@ -28,38 +29,41 @@
           <v-icon>timeline</v-icon>
         </v-tab>
       </v-tabs>
-      <v-tabs-items v-model="tab">
-        <v-tab-item value="tab-1">
+      <v-card>
+       <v-tabs-items v-model="tab">
+         <v-tab-item value="tab-1">
 
-        <v-card v-if="series && series.meta">
-          hoi
-            <v-card-title>
-                <h2>{{ series.meta.cdi_id }}</h2>
-            </v-card-title>
-            <v-card-text>
-                <chart-component :date-range="dateRange" :series="series">
-                </chart-component>
-                <table>
-                    <tr v-for="(value, key) in series.meta"  :key="key">
-                        <th>{{ key }}</th><td>{{ value }}</td>
-                    </tr>
-                </table>
-            </v-card-text>
-        </v-card>
-      </v-tab-item>
-      <v-tab-item value="tab-2">
-        <v-card>
-          <v-card-title>
-              <h2>Cruise data</h2>
-          </v-card-title>
-          <v-card-text>
-            Hier komt een plotje
-              <chart-component-3d type="scatter3D" :dataset="dataTable">
-              </chart-component-3d>
-          </v-card-text>
-        </v-card>
-      </v-tab-item>
-    </v-tabs-items>
+           <v-card v-if="series && series.meta">
+             <v-card-title>
+                 <h2>{{ series.meta.cdi_id }}</h2>
+             </v-card-title>
+             <v-card-text>
+                 <chart-component type="scatter" :date-range="dateRange" :series="series">
+                 </chart-component>
+                 <table>
+                     <tr v-for="(value, key) in series.meta"  :key="key">
+                         <th>{{ key }}</th><td>{{ value }}</td>
+                     </tr>
+                 </table>
+             </v-card-text>
+           </v-card>
+         </v-tab-item>
+         <v-tab-item value="tab-2">
+           <v-card>
+             <v-card-title>
+                 <h2>Cruise data</h2>
+             </v-card-title>
+             <v-card-text>
+               Hier komt een plotje
+                 <chart-component-3d type="scatter3D" :dataset="dataTable">
+                 </chart-component-3d>
+             </v-card-text>
+           </v-card>
+         </v-tab-item>
+
+
+       </v-tabs-items>
+     </v-card>
     </v-navigation-drawer>
     <v-app-bar height="64px" fixed app>
       <v-btn icon :to="{name: 'home'}">

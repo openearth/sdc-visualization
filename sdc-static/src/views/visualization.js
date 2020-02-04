@@ -8,6 +8,7 @@ import timeSlider from '@/components/TimeSlider'
 import depthSlider from '@/components/DepthSlider'
 import chartComponent from '@/components/ChartComponent'
 import mapSettings from '@/components/MapSettings'
+import chartComponent3D from '@/components/ChartComponent3D'
 import store from '@/store.js'
 import layers from './ts-layers.json'
 import sources from  './ts-sources.json'
@@ -19,7 +20,8 @@ export default {
         "v-time-slider": timeSlider,
         "v-depth-slider": depthSlider,
         "chart-component": chartComponent,
-        "map-settings": mapSettings
+        "map-settings": mapSettings,
+        'chart-component-3d': chartComponent3D
     },
     data () {
 
@@ -38,6 +40,7 @@ export default {
                 { title: 'home', icon: 'dashboard' },
                 { title: 'about', icon: 'question_answer' }
             ],
+            tab: null
         }
     },
     mounted() {
@@ -97,6 +100,8 @@ export default {
                 }
                 this.$store.commit('feature', this.hoverFeature)
                 this.loadFeature()
+                this.$store.commit('series', this.$store.state.dataTable)
+
             })
             this.setFilter()
         })
@@ -104,7 +109,8 @@ export default {
     computed: {
         ...mapState([
             'layers',
-            'series'
+            'series',
+            'dataTable'
         ]),
         circleLayers () {
             let circleLayers = layers.filter(
@@ -126,7 +132,7 @@ export default {
         ...mapActions([
             'loadData',
             'loadLayerData',
-            'loadPoint',
+            'loadDataTable',
             'loadFeature'
         ]),
         load () {

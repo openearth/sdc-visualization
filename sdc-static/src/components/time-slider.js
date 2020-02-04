@@ -78,9 +78,12 @@ export default {
         grid: false,
         hide_min_max: true,
         onUpdate: (val) => {
+          console.log('onupdate', val)
           this.$emit('time-extent-update', val)
         },
         onChange: (val) => {
+          console.log('onchange', val)
+
           this.$emit('time-extent-update', val)
         },
         prettify: function (num) {
