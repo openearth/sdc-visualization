@@ -23,4 +23,6 @@ RUN pip install -e ./app
 
 # Expose port 5000
 EXPOSE 5000
+
+HEALTHCHECK CMD curl --fail http://localhost:5000/health || exit 1
 CMD ./startup.sh
