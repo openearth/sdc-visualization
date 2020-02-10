@@ -43,6 +43,13 @@ def home():
     return 'home'
 
 
+@blueprint.route('/debug', methods=['GET', 'POST'])
+@cross_origin()
+def debug():
+    """Debug page, remove later"""
+    return jsonify(dict(session))
+
+
 
 @blueprint.route('/health', methods=['GET', 'POST'])
 @cross_origin()
@@ -59,6 +66,11 @@ def login():
     session['username'] = request.form['username']
     session['password'] = request.form['password']
     session['url'] = request.form['url']
+
+    try:
+        session.update(request.form)
+    except:
+        pass
     # redirect to this directory.
     return redirect('https://orca.dkrz.de:8003')
 
