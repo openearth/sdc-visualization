@@ -1,0 +1,29 @@
+FROM jupyter/scipy-notebook
+LABEL maintainer="Cindy.vandeVriesSafaviNic@deltares.nl"
+USER root
+RUN apt update && \
+    apt install -y davfs2  vim wget curl
+
+
+USER $NB_UID
+
+# Install packages with binary dependencies through conda
+RUN conda config --add channels conda-forge && conda install --quiet --yes xarray matplotlib netCDF4 numpy pandas jupyter notebook pyproj
+
+RUN fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+COPY scripts/startup.sh .
+
+# The rest with pip
+COPY . ./app
+
+RUN pip install -r ./app/requirements.txt && \
+    fix-permissions /home/$NB_USER
+RUN pip install -e ./app
+
+# Expose port 5000
+EXPOSE 5000
+
+HEALTHCHECK CMD curl --fail http://localhost:5000/health || exit 1
+CMD ./startup.sh
