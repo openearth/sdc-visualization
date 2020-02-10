@@ -43,6 +43,16 @@ def home():
     return 'home'
 
 
+
+@blueprint.route('/health', methods=['GET', 'POST'])
+@cross_origin()
+def health():
+    """Home page."""
+    return jsonify({
+        "health": "ok"
+    })
+
+
 @blueprint.route('/login', methods=['POST'])
 def login():
     """Login"""
