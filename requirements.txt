@@ -7,5 +7,6 @@ numpy==1.16.0
 pandas==0.23.4
 Flask==1.0.2
 Flask-Cors==3.0.7
+Flask-Login==0.4.1
 flask-talisman
 -e git+https://github.com/SiggyF/webdav-client-python-3#egg=webdav3
