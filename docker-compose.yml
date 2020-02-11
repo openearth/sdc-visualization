@@ -8,16 +8,20 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "80" # nginx is exposed to 8003 outside
+      # nginx is exposed to 8003 outside
+      - 80
     depends_on:
       - rest
       - static
     command: [nginx-debug, '-g', 'daemon off;']
   rest:
-    image: registry-sdc.argo.grnet.gr/sdc-visualization-service:build-2020-02-10T1203
+    image: sdc-visualization-service
     networks:
       - deltares
     restart: always
+    environment:
+      - VIZ_URL=https://jellyfish.argo.grnet.gr/viz
+      - DASHBOARD_URL=https://sdc-test.argo.grnet.gr
   static:
     image: registry-sdc.argo.grnet.gr/sdc-visualization-static:build-2020-02-10T1645
     networks:
