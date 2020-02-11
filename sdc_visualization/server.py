@@ -50,6 +50,17 @@ def home():
     return 'home'
 
 
+@blueprint.route('/auth', methods=['GET', 'POST'])
+@cross_origin()
+def auth():
+    """Check if user is authenticated."""
+    # TODO: check token
+    if current_user.is_authenticated:
+        return "You are logged in! Sweet!"
+    else:
+        return 'Sorry, but unfortunately you\'re not logged in.', 401
+
+
 @blueprint.route('/debug', methods=['GET', 'POST'])
 @cross_origin()
 def debug():
