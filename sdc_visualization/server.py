@@ -15,12 +15,13 @@ import numpy as np
 import geojson
 import pyproj
 import pandas as pd
+import requests
 
 import webdav3.client
 
-from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
+from flask import Blueprint, Flask, Response, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
-from flask_login import LoginManager, login_user, login_manager, current_user
+from flask_login import LoginManager, login_user, login_manager, current_user, logout_user
 
 import flask.json
 
@@ -31,13 +32,19 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
+# TODO: remove CORS from authentication
 CORS(blueprint)
 
 # we  need this at  module level because we need to register functions
 login_manager = LoginManager()
 
+# Lookup the relevant URL's
+# for now added /
+VIZ_URL = os.environ.get('VIZ_URL', 'https://jellyfish.argo.grnet.gr/viz/')
+DASHBOARD_URL = os.environ.get('DASHBOARD_URL', 'https://sdc-test.argo.grnet.gr')
 
 
+# TODO: move some of this out of here...
 def antimeridian_cut(lon):
     """longitudes > 180 -> -360"""
     return np.mod(np.array(lon) + 180, 360) - 180
@@ -54,22 +61,84 @@ def home():
 @cross_origin()
 def auth():
     """Check if user is authenticated."""
-    # TODO: check token
-    if current_user.is_authenticated:
-        return "You are logged in! Sweet!"
+
+    # if user was created  with a service-auth-token
+    # get form that was filled in when user was created
+    form = getattr(current_user, 'form', None)
+    if form:
+        token = current_user.form.get('service_auth_token')
+    else:
+        # we did not get a service_auth_token
+        token = None
+
+
+    # Do a request to see if token is still valid
+    if token is not None:
+        status = check_token(token)
+    else:
+        # or we assume it is  valid
+        # TODO: remove this if dashboard is setup properly
+        status = 200
+
+    if current_user.is_authenticated and status == 200:
+        return "You are logged in! Welcome."
     else:
         return 'Sorry, but unfortunately you\'re not logged in.', 401
 
+def check_token(token):
+    # check it against the dashboard
+    url = DASHBOARD_URL + '/service_auth?service_auth_token=' +  token
+    # TODO: change  to post later, check security
+    resp = requests.get(url)
+    # if we don't have false, or if we did not get a direct response
+    if 'false' == resp.text or resp.status_code != 200:
+        return 401
+    else:
+        return 200
+
+
+@blueprint.route('/login', methods=['POST'])
+def login():
+    """Login"""
+
+    # You can store extra information like this....
+    service_auth_token = request.form.get('service_auth_token')
+    # if we get a service_auth_token
+    if service_auth_token is not  None:
+        status = check_token(service_auth_token)
+        if status != 200:
+            msg = 'Dashboard authentication at {} failed'.format(DASHBOARD_URL)
+            return Response(msg, status=status)
+
+
+    # Create a new user
+    username = request.form['username']
+    user = User.get(username)
+    # store anything from the form
+    user.form.update(request.form)
+    # Log him in, now we know the user
+    login_user(user)
+
+    # redirect to this directory.
+    return redirect(VIZ_URL)
+
+
+@blueprint.route('/logout', methods=['POST'])
+def logout():
+    # remove the username from the session if it's there
+    logout_user()
+    return jsonify({"result": "ok", "message": "user logged out"})
 
 @blueprint.route('/debug', methods=['GET', 'POST'])
 @cross_origin()
 def debug():
     """Debug page, remove later"""
-    {
+    debug_info = {
         "session": dict(session),
-        "user": current_user.get_id()
+        "user": current_user.get_id(),
+        "form": getattr(current_user, 'form', {})
     }
-    return jsonify(dict(session))
+    return jsonify(dict(debug_info))
 
 
 
@@ -82,80 +151,6 @@ def health():
     })
 
 
-@blueprint.route('/login', methods=['POST'])
-def login():
-    """Login"""
-    session['username'] = request.form['username']
-    session['password'] = request.form['password']
-    session['url'] = request.form['url']
-
-    user = User.get(session['username'])
-    login_user(user)
-    try:
-        session.update(request.form)
-    except:
-        pass
-    # redirect to this directory.
-    return redirect('https://orca.dkrz.de:8003')
-
-
-@blueprint.route('/logout', methods=['POST'])
-def logout():
-    # remove the username from the session if it's there
-    session.pop('username', None)
-    session.pop('password', None)
-    session.pop('url', None)
-    return jsonify({"result": "ok", "message": "user logged out"})
-
-@blueprint.route('/api/load-webdav', methods=['POST'])
-def load_webdav():
-    req_data = request.get_json()
-    filename = req_data['filename']
-    options = {
-        'webdav_login': session['username'],
-        'webdav_password': session['password'],
-        'webdav_hostname': session['url']
-    }
-    remote_path = pathlib.Path(
-        filename
-    )
-    tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
-    local_path = pathlib.Path(tmp_dir) / remote_path.name
-
-    client = webdav3.client.Client(options)
-    client.http_header['list'].append('Authorization: Bearer')
-    # for  debuggin show the list of files
-    try:
-        ls = client.list()
-        resp = {'ls': ls}
-        ls_viz = client.list('viz')
-        resp['ls_viz'] = ls_viz
-    except webdav3.exceptions.RemoteResourceNotFound:
-        pass
-
-
-    # let's assume it works
-    resp["loaded"] = True
-    resp["local_path"] = str(local_path)
-    resp["remote_path"] = str(remote_path)
-
-    resp["check"] = client.check(remote_path=str(remote_path))
-
-    # if file exists
-    if resp['check']:
-        # split for debugging
-        args = dict(
-            local_path=str(local_path),
-            remote_path=str(remote_path)
-        )
-        client.download(**args)
-    else:
-        logger.exception("download failed")
-        resp['message'] = str(e)
-        resp['loaded'] = False
-
-    resp["filename"] = filename
-    return jsonify(resp)
 
 @blueprint.route('/api/load', methods=['POST'])
 @cross_origin()

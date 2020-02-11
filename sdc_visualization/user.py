@@ -5,6 +5,8 @@ class User(flask_login.UserMixin):
     def __init__(self, user_id):
         """create  a new  user"""
         self.id = user_id
+        # store  form metadata
+        self.form = {}
 
     @staticmethod
     def get(user_id):
