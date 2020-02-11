@@ -13,40 +13,16 @@ services:
       - rest
       - static
     command: [nginx-debug, '-g', 'daemon off;']
-  notebook:
-    image: openearth/sdc-visualization-notebook
-    networks:
-      - deltares
-    volumes:
-      - storage:/home/jovyan/storage:rw
-    ports:
-      - "8888"
-    cap_add:
-      - SYS_ADMIN
-    devices:
-      - "/dev/fuse"
   rest:
-    image: openearth/sdc-visualization-service
+    image: registry-sdc.argo.grnet.gr/sdc-visualization-service:build-2020-02-10T1203
     networks:
       - deltares
     restart: always
-    ports:
-      - "5000"
-    cap_add:
-      - SYS_ADMIN
-    devices:
-      - "/dev/fuse"
-    environment:
-      - SYS_ADMIN
-    ports:
-      - "5000" # no exposure to outside, no SSL (nginx handles that)
   static:
-    image: openearth/sdc-visualization-static
+    image: registry-sdc.argo.grnet.gr/sdc-visualization-static:build-2020-02-10T1645
     networks:
       - deltares
     restart: always
-    ports:
-      - "80"
 networks:
   deltares:
     driver: "bridge"
