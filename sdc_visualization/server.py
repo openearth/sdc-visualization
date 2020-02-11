@@ -20,15 +20,22 @@ import webdav3.client
 
 from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
+from flask_login import LoginManager, login_user, login_manager, current_user
+
 import flask.json
 
 from sdc_visualization.ds import get_ds, close_ds
+from sdc_visualization.user import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 CORS(blueprint)
+
+# we  need this at  module level because we need to register functions
+login_manager = LoginManager()
+
 
 
 def antimeridian_cut(lon):
@@ -47,6 +54,10 @@ def home():
 @cross_origin()
 def debug():
     """Debug page, remove later"""
+    {
+        "session": dict(session),
+        "user": current_user.get_id()
+    }
     return jsonify(dict(session))
 
 
@@ -67,6 +78,8 @@ def login():
     session['password'] = request.form['password']
     session['url'] = request.form['url']
 
+    user = User.get(session['username'])
+    login_user(user)
     try:
         session.update(request.form)
     except:
@@ -436,11 +449,11 @@ def dataset_slice():
     ds.close()
     return jsonify(collection)
 
+@login_manager.user_loader
+def load_user(user_id):
+    """user management"""
+    return User.get(user_id)
 
-
-#TODO: Need a request to get all variables back
-# def get_variables():
-#     return ds.variables
 
 def create_app():
     """Create an app."""
@@ -450,11 +463,13 @@ def create_app():
     app.secret_key = os.urandom(16)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
 
+    # add user sessions
+    login_manager.init_app(app)
 
-
+    # add urls
     app.register_blueprint(blueprint)
-    # make sure file is closed
-    # app.teardown_appcontext(close_ds)
+
+
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 
