@@ -23,7 +23,7 @@ services:
       - VIZ_URL=https://jellyfish.argo.grnet.gr/viz
       - DASHBOARD_URL=https://sdc-test.argo.grnet.gr
   static:
-    image: registry-sdc.argo.grnet.gr/sdc-visualization-static:build-2020-02-10T1645
+    image: sdc-visualization-static
     networks:
       - deltares
     restart: always
