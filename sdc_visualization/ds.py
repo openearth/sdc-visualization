@@ -8,9 +8,10 @@ def get_ds(dataset=None):
 
 
     data_dirs = [
-        pathlib.Path('~/data/odv').expanduser(),
-        pathlib.Path('app/data'),
-        pathlib.Path('data')
+        # the data in the docker container
+        pathlib.Path('/data/public/profiles'),
+        # on Fedor's computer...
+        pathlib.Path('~/data/odv').expanduser()
     ]
     for data_dir in data_dirs:
         if data_dir.is_dir():
@@ -18,14 +19,7 @@ def get_ds(dataset=None):
     else:
         raise ValueError('data directory not found. Tried {}'.format(data_dirs))
 
-    if dataset is not None:
-        filename =  data_dir  / dataset
-    else:
-        if hasattr(current_app, 'filename'):
-            # TODO: where does this come from?
-            filename = data_dir /  current_app.filename
-        else:
-            filename = data_dir  / 'data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
+    filename =  data_dir  / dataset
     ds = load_dataset(filename)
     return ds
 
