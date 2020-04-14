@@ -82,8 +82,7 @@ RUN conda create -n env python=3.7
 RUN echo "source activate env" > ~/.bashrc
 ENV PATH /opt/conda/envs/env/bin:$PATH
 # Install packages with binary dependencies through conda
-RUN conda config --add channels conda-forge && conda install -y matplotlib netCDF4 numpy pandas jupyter notebook
-RUN conda install pyproj
+RUN conda config --add channels conda-forge && conda install -y matplotlib netCDF4 numpy pandas jupyter notebook pyproj
 
 
 
