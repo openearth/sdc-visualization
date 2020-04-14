@@ -87,9 +87,12 @@ def auth():
 
 def check_token(token):
     # check it against the dashboard
-    url = DASHBOARD_URL + '/service_auth?service_auth_token=' +  token
+    url = DASHBOARD_URL + '/service_auth'
+    request = {
+        "service_auth_token": token
+    }
     # TODO: change  to post later, check security
-    resp = requests.get(url)
+    resp = requests.post(url, data=request)
     # if we don't have false, or if we did not get a direct response
     if 'false' == resp.text or resp.status_code != 200:
         return 401
