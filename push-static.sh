@@ -1,4 +1,5 @@
 #!/bin/bash
+datestr=$(date '+%Y-%m-%dT%H%M')
 
 # Push to dockerhub
 docker tag sdc-visualization-static openearth/sdc-visualization-static:build-${datestr}
