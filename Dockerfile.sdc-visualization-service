@@ -84,12 +84,8 @@ ENV PATH /opt/conda/envs/env/bin:$PATH
 # Install packages with binary dependencies through conda
 RUN conda config --add channels conda-forge && conda install -y matplotlib netCDF4 numpy pandas jupyter notebook pyproj
 
-
-
-
 RUN pip install -r ./app/requirements.txt
 RUN pip install -e ./app
-
 # # # Expose port 5000
 
 # # # Public datasets (~10GB)
