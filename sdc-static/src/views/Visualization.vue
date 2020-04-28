@@ -6,7 +6,7 @@
                 <h2>{{ series.meta.cdi_id }}</h2>
             </v-card-title>
             <v-card-text>
-                <chart-component :date-range="dateRange" :series="series">
+                <chart-component :date-range="range" :series="series">
                 </chart-component>
                 <table>
                     <tr v-for="(value, key) in series.meta"  :key="key">
