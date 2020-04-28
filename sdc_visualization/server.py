@@ -103,7 +103,7 @@ def check_token(token):
 
 
 
-# ensure datetime function 
+# ensure datetime function
 def ensure_datetime(maybe_datetime):
 
     """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
@@ -112,7 +112,7 @@ def ensure_datetime(maybe_datetime):
         date = maybe_datetime._to_real_datetime()
     else:
         date = maybe_datetime
-    
+
     return date
 
 @blueprint.route('/login', methods=['POST'])
@@ -179,27 +179,7 @@ def load():
     # the filename string
     filename = req_data.get('filename')
 
-    # the expanded path
-    filepath = pathlib.Path(filename).expanduser()
-
-    resp = {"loaded": False}
-    if not filepath.suffix == '.nc':
-        resp["error"] = "filename does not end in .nc"
-        return jsonify(resp)
-    if not filepath.exists():
-        resp["error"] = "file does not exist"
-        return jsonify(resp)
-    print(req_data)
-    if req_data.get('copy', False):
-        tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
-        # copy the expanded file
-        shutil.copy(filepath, tmp_dir)
-        # replace filename with new filename
-        filename = str(pathlib.Path(tmp_dir) / filepath.name)
-    # add the dataset to the loaded app
-    # perhaps use flask.g, but that did not work
-    current_app.filename = filename
-    ds = get_ds()
+    ds = get_ds(dataset=filename)
     resp["loaded"] = True
     resp["filename"] = filename
     ds.close()
@@ -285,7 +265,7 @@ def get_cdi_id_var(ds):
     for var_name, var in ds.variables.items():
         if var.long_name == "LOCAL_CDI_ID":
             break
-    else: 
+    else:
         raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
 
     return var_name
@@ -363,10 +343,10 @@ def get_profile():
     # ensure date time
     date = ensure_datetime(date)
     meta_vars.update({
-            "date": date.isoformat(), 
-            "cdi_id": cdi_id,
-            "lon": lon,
-            "lat": lat
+        "date": date.isoformat(),
+        "cdi_id": cdi_id,
+        "lon": lon,
+        "lat": lat
     })
 
     response = {
@@ -476,7 +456,7 @@ def get_profiles():
     """ Return profile for selected points"""
     # read inputs
     cdi_ids_input = request.args.getlist("cdi_ids")
-    
+
     dataset = request.values.get("dataset")
 
     ds = get_ds(dataset=dataset)
@@ -488,12 +468,12 @@ def get_profiles():
     cdi_id_var = get_cdi_id_var(ds = ds)
 
     # create a list with all the cdi_ids
-    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:]) 
+    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
 
     # create a list with the idxs of the given cdi_ids
     idxs = []
     for cdi_id in cdi_ids_input:
-       
+
         idx = np.argmax(cdi_ids == cdi_id)
         idxs.append(idx)
 
@@ -502,7 +482,7 @@ def get_profiles():
         name
         for name, var
         in ds.variables.items()
-        if (name.startswith('var') and not '_' in name) 
+        if (name.startswith('var') and not '_' in name)
     ]
 
     # prepare the output
@@ -512,19 +492,19 @@ def get_profiles():
     output.append(titles)
 
     for idx in idxs:
-       
+
         cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
-        
+
         np.array2string(cdi_id)
-        
-       
-        
-        idx_variables ={} 
+
+
+
+        idx_variables ={}
         for var_name in var_names:
             var = ds.variables[var_name]
             try:
                 idx_variables[var.long_name] = var[idx]
-            except IdexError: 
+            except IdexError:
                 print ("failed to index {} with index {}".format(var,  idx))
         cdi_id_array = np.empty(shape = idx_variables["Depth"].shape, dtype = '<U28')
         cdi_id_array.fill(str(cdi_id))
@@ -532,21 +512,21 @@ def get_profiles():
         c= np.array(list(zip(idx_variables["ITS-90 water temperature"],idx_variables["Water body salinity"],idx_variables["Depth"])))
 
         df = pd.DataFrame(data=c)
-        df = df.dropna(how='all') 
-        # create a list with lists of the values 
-        ls = df.values.tolist()   
-        
-        #pass through all the lists of the list and append with the 
+        df = df.dropna(how='all')
+        # create a list with lists of the values
+        ls = df.values.tolist()
+
+        #pass through all the lists of the list and append with the
         # corresponding cdi_id
         # every list: temperature, salinity, depth, cdi_id
-        for item in ls: 
+        for item in ls:
             item.append(str(cdi_id))
-            output.append(item)       
+            output.append(item)
 
         response = {
             "data": output
         }
-           
+
     return jsonify(response)
 
 @login_manager.user_loader
@@ -554,7 +534,7 @@ def load_user(user_id):
     """user management"""
     return User.get(user_id)
 
-    
+
 def create_app():
     """Create an app."""
 
@@ -569,7 +549,7 @@ def create_app():
     # add urls
     app.register_blueprint(blueprint)
 
-    
+
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 

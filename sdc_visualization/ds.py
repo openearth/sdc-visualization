@@ -5,7 +5,8 @@ import netCDF4
 
 def get_ds(dataset=None):
     """get the dataset"""
-
+    if dataset is None:
+        dataset  = 'data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
 
     data_dirs = [
         # the data in the docker container
