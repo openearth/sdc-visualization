@@ -2,9 +2,6 @@ import echarts from 'echarts/lib/echarts'
 import echartsgl from 'echarts-gl'
 
 import Vue from 'vue'
-import _ from 'lodash'
-import Papa from 'papaparse'
-
 // TODO: replace this with vue-echart
 export default {
   name: "chart-component",
@@ -30,15 +27,18 @@ export default {
 
   mounted() {
     this.createGraph()
+    this.updateGraph()
 
   },
-  watch() {
-    profileIds() {
-      this.updateGraph()
+  watch: {
+    profileIds: {
+      handler() {
+        this.updateGraph()
+      }
     }
-  }
+  },
   methods: {
-    saveCsv () {
+    saveCsv() {
       console.log('yes')
     },
 
@@ -61,54 +61,57 @@ export default {
       this.graph = echarts.init(dom)
     },
     updateGraph() {
+      const ids = this.profileIds.join('&cdi_ids=')
 
-            fetch ('http://localhost:5000/api/get_profiles?cdi_ids=12391000&cdi_ids=13240401&cdi_ids=14810446&cdi_ids=30784972&cdi_ids=FI35201045008_0L205_H10&dataset=data_from_SDN_2015-09_TS_MedSea_QC_done_v2.nc', {
-              mode: 'cors',
-              headers: {
-                'Content-Type': 'application/json',
+      fetch(`http://localhost:5000/api/get_profiles?cdi_ids=${ids}`, {
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => {
+          const result = response.json()
+          console.log( 'result', result)
+          return result
+        })
+        .then(json => {
+          console.log('fetchted', json)
+          const data = json.data
+          const symbolSize = 2.5
+          let options = {
+            grid3D: {},
+            xAxis3D: {
+              type: 'category'
+            },
+            yAxis3D: {},
+            zAxis3D: {},
+            dataset: {
+              dimensions: [
+                'Water temperature',
+                'Water body salinity',
+                'Depth',
+                'cdi_id',
+                {
+                  name: 'Water temperature',
+                  type: 'ordinal'
+                }
+              ],
+              source: data
+            },
+            series: [{
+              type: 'scatter3D',
+              symbolSize: symbolSize,
+              encode: {
+                x: 'cdi_id',
+                y: 'Water temperature',
+                z: 'Depth',
+                tooltip: [0, 1, 2, 3, 4]
               }
-            })
-            .then(response => {
-              const result = response.text()
-              console.log('this is actually working', result, JSON.parse(result))
-              return result
-            })
-            .then(data => {
-              console.log('fetchted', data)
-              const symbolSize = 2.5
-              let options = {
-                grid3D: {},
-                xAxis3D: {
-                    type: 'category'
-                },
-                yAxis3D: {},
-                zAxis3D: {},
-                dataset: {
-                    dimensions: [
-                        'Water temperature',
-                        'Water body salinity',
-                        'Depth',
-                        'cdi_id',
-                        {name: 'Water temperature', type: 'ordinal'}
-                    ],
-                    source: data
-                },
-                series: [
-                    {
-                        type: 'scatter3D',
-                        symbolSize: symbolSize,
-                        encode: {
-                            x: 'cdi_id',
-                            y: 'Water temperature',
-                            z: 'Depth',
-                            tooltip: [0, 1, 2, 3, 4]
-                        }
-                    }
-                ]
-            };
-            this.graph.setOption(options)
-            // this.graph.setOption(this.option, true)
-          })
+            }]
+          };
+          this.graph.setOption(options)
+          // this.graph.setOption(this.option, true)
+        })
 
     }
   }

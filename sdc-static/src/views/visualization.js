@@ -88,11 +88,9 @@ export default {
         draw.add(e.features[0])
         const NW = this.map.project(e.features[0].geometry.coordinates[0][3])
         const SE = this.map.project(e.features[0].geometry.coordinates[0][1])
-        console.log(e, NW, SE)
         const features = this.map.queryRenderedFeatures([NW, SE], {
           layers: this.circleLayers
         })
-        console.log(features)
         this.profileIds = features.map(feat => {
           return feat.properties.cdi_id
         })
@@ -126,7 +124,6 @@ export default {
           [e.point.x - buffer, e.point.y - buffer],
           [e.point.x + buffer, e.point.y + buffer]
         ]
-        console.log(bbox)
         let features = this.map.queryRenderedFeatures(bbox, {
           layers: this.circleLayers
         })
