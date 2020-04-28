@@ -27,19 +27,83 @@
         <v-icon>fa-repeat</v-icon>
       </v-btn>
     </v-btn-toggle>
-    <v-btn @click.stop="showSettings = true"  icon flat>
+    <v-btn @click.stop="configDialog = true"  icon text>
       <v-icon>fa-gear</v-icon>
     </v-btn>
-    <!-- bubble up extent -->
-    <time-slider-settings
-        :show-settings.sync="showSettings"
-        :extent="extent"
-        @update:extent="$emit('update:extent', $event)"
-        :domain="domain"
-        :range.sync="range"
 
-
-        ></time-slider-settings>
+    <v-dialog v-model="configDialog" max-width="100%">
+      <v-card>
+        <v-card-text>
+          <v-menu
+            ref="startDateMenu"
+            lazy
+            :close-on-content-click="false"
+            v-model="startDateMenu"
+            transition="scale-transition"
+            offset-y
+            full-width
+            :return-value.sync="startDate"
+            >
+            <v-text-field
+              slot="activator"
+              label="Picker in menu"
+              v-model="startDate"
+              prepend-icon="event"
+              readonly
+              ></v-text-field>
+            <v-date-picker
+              v-model="startDate"
+              :allowed-dates="allowedDates"
+              no-title
+              scrollable
+              >
+              <template slot-scope="{ save, cancel }">
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn text color="primary" @click.stop="startDateMenu = false">Cancel</v-btn>
+                  <v-btn text color="primary" @click.stop="$refs.startDateMenu.save(startDate)">OK</v-btn>
+                </v-card-actions>
+              </template>
+            </v-date-picker>
+          </v-menu>
+          <v-menu
+            ref="endDateMenu"
+            lazy
+            :close-on-content-click="false"
+            v-model="endDateMenu"
+            transition="scale-transition"
+            offset-y
+            full-width
+            :return-value.sync="endDate"
+            >
+            <v-text-field
+              slot="activator"
+              label="Picker in menu"
+              v-model="endDate"
+              prepend-icon="event"
+              readonly
+              ></v-text-field>
+            <v-date-picker
+              v-model="endDate"
+              :allowed-dates="allowedDates"
+              no-title
+              scrollable
+              >
+              <template slot-scope="{ save, cancel }">
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn text color="primary" @click.stop="endDateMenu = false">Cancel</v-btn>
+                  <v-btn text color="primary" @click.stop="$refs.endDateMenu.save(endDate)">OK</v-btn>
+                </v-card-actions>
+              </template>
+            </v-date-picker>
+          </v-menu>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text color="primary" @click.stop="configDialog=false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-toolbar>
 </template>
 <script src="./time-slider.js"></script>
@@ -49,7 +113,6 @@
 @import '~ion-rangeslider/css/ion.rangeSlider.css';
 @import '~ion-rangeslider/css/ion.rangeSlider.skinHTML5.css';
 @import '~font-awesome/css/font-awesome.css';
-
 .time-slider, .v-toolbar, .v-toolbar__content {
   z-index: 1;
   margin: 0 !important;
@@ -63,7 +126,6 @@
   width: 100%;
   padding-right: 40px;
 }
-
 [disabled] > .svg-inline--fa,
 [disabled] > .fas {
   color: lightgrey;
@@ -74,7 +136,6 @@
 .irs-line-right {
   height: 2px;
 }
-
 .irs-line {
   height: 2px;
   background: rgba(0, 0, 0, 0.26);
@@ -82,7 +143,6 @@
   border-color: none;
   border-image: none;
   border-style: none;
-
 }
 .irs-bar {
   height: 2px;
@@ -96,7 +156,6 @@
   box-shadow: none;
   border: none;
 }
-
 .irs-slider:hover {
   transform: scale(1.2);
   background: #1976D2;

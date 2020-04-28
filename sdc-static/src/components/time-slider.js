@@ -1,15 +1,19 @@
 import $ from 'jquery';
 import Vue from 'vue';
-import moment from 'moment';
+import moment from 'moment'
+// eslint-disable-next-line
 import ionRangeslider from 'ion-rangeslider/js/ion.rangeSlider.js';
-import TimeSliderSettings from './TimeSliderSettings.vue'
-import {FORMATS} from './time-formats'
+
+const FORMATS = {
+    year: "Y",
+    month: "Y-MM",
+    day: "Y-MM-DD"
+}
+
+
 
 export default {
   name: "time-slider",
-  components: {
-    TimeSliderSettings
-  },
   props: {
     showPlay: {
       type: Boolean,
@@ -23,35 +27,30 @@ export default {
       type: Boolean,
       default: false
     },
-    // Current extent  of  time slider
+    // maximum extent, by default 10 * interval
     extent: {
       type: Array,
-      required: true
-    },
-    // Maximum extent
-    domain: {
-      type: Array,
       default () {
-        // by default us the extent on creation
-        return [...this.extent]
+        let now = moment('2015-12-31T00:00:00')
+        let then = moment('2000-01-01T00:00:00')
+        return [then, now]
       }
     },
-    // Current selected timespan
-    // By  default last year
-    range: {
-      type: Array,
-      default () {
-        let to = this.extent[1]
-        let from = this.extent[1].subtract(1, this.interval)
-        return [from, to]
-      }
-    }
+
   },
   data() {
-
     return {
-      showSettings: false,
+      configDialog: false,
+      startDateMenu: false,
+      endDateMenu: false,
       format: FORMATS.year,
+
+        // by default use the full extent
+
+      startDate: this.extent[0].format(FORMATS.year),
+      endDate: this.extent[1].format(FORMATS.year),
+      to: this.extent[1].format(FORMATS.year),
+      from: this.extent[1].subtract(1, this.interval).format(FORMATS.year),
 
       // duration of a loop
       loopDuration: 20,
@@ -71,8 +70,8 @@ export default {
         drag_interval: true,
         min: +moment(this.startDate).format("X"),
         max: +moment(this.endDate).format("X"),
-        from: +moment(this.range[0]).format("X"),
-        to: +moment(this.range[1]).format("X"),
+        from: +moment(this.from).format("X"),
+        to: +moment(this.to).format("X"),
         step: +moment.duration(1, this.interval).asSeconds(),
         min_interval: this.fixedHandles ? +moment.duration(1, this.interval).asSeconds() : null,
         max_interval: this.fixedHandles ? +moment.duration(1, this.interval).asSeconds() : null,
@@ -80,12 +79,13 @@ export default {
         grid: false,
         hide_min_max: true,
         onUpdate: (val) => {
-          let range = [moment.unix(val.from), moment.unix(val.to)]
-          this.$emit('update:range', range)
+          console.log('onupdate', val)
+          this.$emit('time-extent-update', val)
         },
         onChange: (val) => {
-          let range = [moment.unix(val.from), moment.unix(val.to)]
-          this.$emit('update:range', range)
+          console.log('onchange', val)
+
+          this.$emit('time-extent-update', val)
         },
         prettify: function (num) {
           return moment(num, "X").format(FORMATS.year);
@@ -123,22 +123,22 @@ export default {
         return;
       }
       // update with fraction
-      let from = moment(this.range[0]).add(1, this.interval).format(FORMATS.year)
-      let to = moment(this.range[1]).add(1, this.interval).format(FORMATS.year)
+      this.from = moment(this.from).add(1, this.interval).format(FORMATS.year)
+      this.to = moment(this.to).add(1, this.interval).format(FORMATS.year)
       // TODO: google earth uses a smarter loop,
       // it keeps track of the diff somehow
       // we reached the end, loop
-      if (to > moment(this.endDate).format(FORMATS.year)) {
+      if (this.to > moment(this.endDate).format(FORMATS.year)) {
         if (this.loop) {
-          to = moment(this.startDate).add(1, this.interval).format(FORMATS.year)
-          from = moment(this.startDate).format(FORMATS.year)
+          this.to = moment(this.startDate).add(1, this.interval).format(FORMATS.year)
+          this.from =  moment(this.startDate).format(FORMATS.year)
         } else {
           // stop updating
           return;
         }
       }
       // apply it to the slider (fires update event)
-      this.slider.update({"to": +moment(to).format("X"), "from": +moment(from).format("X")})
+      this.slider.update({"to": +moment(this.to).format("X"), "from": +moment(this.from).format("X")})
       // remember current time
       this.last = now;
     },
@@ -153,30 +153,16 @@ export default {
     },
     dateFormat (fraction) {
       return this.dateByFraction(fraction).format(FORMATS.year)
+    },
+    allowedDates() {
+      // return allowed dates, based on extent
+      return {
+        min: this.extent[0].format(FORMATS.year),
+        max: this.extent[1].format(FORMATS.year)
+      }
     }
   },
   computed: {
-    startDate: {
-      get () {
-        let start = this.extent[0]
-        return start.format(FORMATS.day)
-      },
-      set (val) {
-        let extent = [...this.extent]
-        extent[0] = moment(val)
-        this.$emit('update:extent', extent)
-      }
-    },
-    endDate: {
-      get () {
-        return this.extent[1].format(FORMATS.day)
-      },
-      set (val) {
-        let extent = [...this.extent]
-        extent[1] = moment(val)
-        this.$emit('update:extent', extent)
-      }
-    },
     currentTime() {
       return this.dateByFraction(this.slider.result.to);
     },

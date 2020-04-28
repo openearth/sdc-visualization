@@ -7,6 +7,9 @@ import vuetify from './plugins/vuetify'
 import Vue2Filters from 'vue2-filters'
 import Vue2MapboxGL from 'vue2mapbox-gl'
 
+
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
+
 Vue.use(Vue2MapboxGL);
 Vue.use(Vue2Filters)
 

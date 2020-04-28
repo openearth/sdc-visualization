@@ -24,7 +24,7 @@
         </v-tab>
 
         <v-tab href="#tab-2">
-          Trajectory
+          Area
           <v-icon>timeline</v-icon>
         </v-tab>
       </v-tabs>
@@ -32,7 +32,6 @@
         <v-tab-item value="tab-1">
 
         <v-card v-if="series && series.meta">
-          hoi
             <v-card-title>
                 <h2>{{ series.meta.cdi_id }}</h2>
             </v-card-title>
@@ -53,8 +52,7 @@
               <h2>Cruise data</h2>
           </v-card-title>
           <v-card-text>
-            Hier komt een plotje
-              <chart-component-3d type="scatter3D" :dataset="dataTable">
+              <chart-component-3d type="scatter3D" :dataset="dataTable" :profileIds="profileIds">
               </chart-component-3d>
           </v-card-text>
         </v-card>
@@ -104,7 +102,6 @@
 </script>
 
 <style scoped>
-
 /* Visualization */
 @import '~mapbox-gl/dist/mapbox-gl.css';
 .navdrawer {
@@ -127,5 +124,15 @@
   z-index: 1;
   overflow-y: overlay;
   max-height: calc(100% - 64px);
+}
+
+.boxdraw {
+background: rgba(56, 135, 190, 0.1);
+border: 2px solid #3887be;
+position: absolute;
+top: 0;
+left: 0;
+width: 0;
+height: 0;
 }
 </style>
