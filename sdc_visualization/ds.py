@@ -11,7 +11,9 @@ def get_ds(dataset=None):
     data_dirs = [
         # the data in the docker container
         pathlib.Path('/data/public/profiles'),
+        pathlib.Path('/data/public'),
         # on Fedor's computer...
+        pathlib.Path('~/data/odv/profiles').expanduser(),
         pathlib.Path('~/data/odv').expanduser()
     ]
     for data_dir in data_dirs:
