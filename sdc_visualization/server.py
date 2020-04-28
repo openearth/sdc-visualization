@@ -101,9 +101,10 @@ def check_token(token):
     else:
         return 200
 
+
+
 # ensure datetime function
 def ensure_datetime(maybe_datetime):
-
 
     """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
 
@@ -221,7 +222,6 @@ def dataset():
     # this can be a bit slow
     date_nums = ds.variables['date_time'][:]
 
-
     # if we have an actual range, use that
     try:
         times = netCDF4.num2date(
@@ -279,22 +279,10 @@ def extent():
     return jsonify(resp)
 
 
-"""@functools.lru_cache()
-def get_cdi_ids():
-    ds = get_ds()
-    # this takes 2 seconds
-    for var_name,  var  in ds.variables.items():
-        if var.long_name == 'LOCAL_CDI_ID':
-            break
-    else:
-        raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
-    logger.info('variable  cdi-id {}'.format(var_name))
-    cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
-    return cdi_ids
-"""
+
 @functools.lru_cache()
 def get_cdi_id_var(ds):
-
+    #TODO we cant always be sure that LOCAL_CDI_ID is the var_name that we need
     for var_name, var in ds.variables.items():
         if var.long_name == "LOCAL_CDI_ID":
             break
@@ -305,10 +293,10 @@ def get_cdi_id_var(ds):
 
 
 
-@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
+@blueprint.route('/api/get_profile', methods=['GET', 'POST'])
 @cross_origin()
-def get_timeseries():
-    """Return profile for point data"""
+def get_profile():
+    """Return profile for one cdi_id"""
 
     cdi_id = request.values.get("cdi_id")
     cdi_id = str(cdi_id)
@@ -372,8 +360,11 @@ def get_timeseries():
             meta_vars[var.long_name] = var[idx]
 
     ds.close()
+
+    # ensure date time
+    date = ensure_datetime(date)
     meta_vars.update({
-            "date": ensure_datetime(date).isoformat(),
+            "date": date.isoformat(),
             "cdi_id": cdi_id,
             "lon": lon,
             "lat": lat
@@ -384,8 +375,6 @@ def get_timeseries():
         "meta": meta_vars
     }
     return jsonify(response)
-
-
 
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
@@ -518,6 +507,7 @@ def get_profiles():
     ]
 
     # prepare the output
+    # TODO take a look at these hardcoded names. Either be an input in the function or something more generic
     titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id"]
     output = []
     output.append(titles)
@@ -554,8 +544,11 @@ def get_profiles():
             item.append(str(cdi_id))
             output.append(item)
 
+        response = {
+            "data": output
+        }
 
-    return jsonify(output)
+    return json.dump(response, allow_nan=False)
 
 @login_manager.user_loader
 def load_user(user_id):
