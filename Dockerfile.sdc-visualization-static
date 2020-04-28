@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 
 COPY sdc-static/dist /usr/share/nginx/html
-
+HEALTHCHECK CMD service nginx status || exit 1
 # Expose http port
 EXPOSE 80
 # Allow user to overwrite the html, logs and configuration

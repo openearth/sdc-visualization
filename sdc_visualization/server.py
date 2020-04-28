@@ -15,22 +15,38 @@ import numpy as np
 import geojson
 import pyproj
 import pandas as pd
+import requests
 
 import webdav3.client
 
-from flask import Blueprint, Flask, jsonify, session, current_app, request, g, redirect
+from flask import Blueprint, Flask, Response, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
+from flask_login import LoginManager, login_user, login_manager, current_user, logout_user
+
 import flask.json
 
 from sdc_visualization.ds import get_ds, close_ds
+from sdc_visualization.user import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
+# Debug
+test = Blueprint('test', __name__)
+# TODO: remove CORS from authentication
 CORS(blueprint)
 
+# we  need this at  module level because we need to register functions
+login_manager = LoginManager()
 
+# Lookup the relevant URL's
+# for now added /
+VIZ_URL = os.environ.get('VIZ_URL', 'https://jellyfish.argo.grnet.gr/viz/')
+DASHBOARD_URL = os.environ.get('DASHBOARD_URL', 'https://sdc-test.argo.grnet.gr')
+
+
+# TODO: move some of this out of here...
 def antimeridian_cut(lon):
     """longitudes > 180 -> -360"""
     return np.mod(np.array(lon) + 180, 360) - 180
@@ -43,73 +59,115 @@ def home():
     return 'home'
 
 
+@blueprint.route('/auth', methods=['GET', 'POST'])
+@cross_origin()
+def auth():
+    """Check if user is authenticated."""
+
+    # if user was created  with a service-auth-token
+    # get form that was filled in when user was created
+    form = getattr(current_user, 'form', None)
+    if form:
+        token = current_user.form.get('service_auth_token')
+    else:
+        # we did not get a service_auth_token
+        token = None
+
+
+    # Do a request to see if token is still valid
+    if token is not None:
+        status = check_token(token)
+    else:
+        # or we assume it is  valid
+        # TODO: remove this if dashboard is setup properly
+        status = 200
+
+    if current_user.is_authenticated and status == 200:
+        return "You are logged in! Welcome."
+    else:
+        return 'Sorry, but unfortunately you\'re not logged in.', 401
+
+def check_token(token):
+    # check it against the dashboard
+    url = DASHBOARD_URL + '/service_auth'
+    request = {
+        "service_auth_token": token
+    }
+    # TODO: change  to post later, check security
+    resp = requests.post(url, data=request)
+    # if we don't have false, or if we did not get a direct response
+    if 'false' == resp.text or resp.status_code != 200:
+        return 401
+    else:
+        return 200
+
+# ensure datetime function
+def ensure_datetime(maybe_datetime):
+
+
+    """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
+
+    if hasattr(maybe_datetime, '_to_real_datetime'):
+        date = maybe_datetime._to_real_datetime()
+    else:
+        date = maybe_datetime
+
+    return date
+
 @blueprint.route('/login', methods=['POST'])
 def login():
     """Login"""
-    session['username'] = request.form['username']
-    session['password'] = request.form['password']
-    session['url'] = request.form['url']
+
+    # You can store extra information like this....
+    service_auth_token = request.form.get('service_auth_token')
+    # if we get a service_auth_token
+    if service_auth_token is not  None:
+        status = check_token(service_auth_token)
+        if status != 200:
+            msg = 'Dashboard authentication at {} failed'.format(DASHBOARD_URL)
+            return Response(msg, status=status)
+
+
+    # Create a new user
+    username = request.form['username']
+    user = User.get(username)
+    # store anything from the form
+    user.form.update(request.form)
+    # Log him in, now we know the user
+    login_user(user)
+
     # redirect to this directory.
-    return redirect('https://orca.dkrz.de:8003')
+    return redirect(VIZ_URL)
 
 
 @blueprint.route('/logout', methods=['POST'])
 def logout():
     # remove the username from the session if it's there
-    session.pop('username', None)
-    session.pop('password', None)
-    session.pop('url', None)
+    logout_user()
     return jsonify({"result": "ok", "message": "user logged out"})
 
-@blueprint.route('/api/load-webdav', methods=['POST'])
-def load_webdav():
-    req_data = request.get_json()
-    filename = req_data['filename']
-    options = {
-        'webdav_login': session['username'],
-        'webdav_password': session['password'],
-        'webdav_hostname': session['url']
+@blueprint.route('/debug', methods=['GET', 'POST'])
+@cross_origin()
+def debug():
+    """Debug page, remove later"""
+    debug_info = {
+        "session": dict(session),
+        "user": current_user.get_id(),
+        "form": getattr(current_user, 'form', {})
     }
-    remote_path = pathlib.Path(
-        filename
-    )
-    tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
-    local_path = pathlib.Path(tmp_dir) / remote_path.name
-
-    client = webdav3.client.Client(options)
-    client.http_header['list'].append('Authorization: Bearer')
-    # for  debuggin show the list of files
-    try:
-        ls = client.list()
-        resp = {'ls': ls}
-        ls_viz = client.list('viz')
-        resp['ls_viz'] = ls_viz
-    except webdav3.exceptions.RemoteResourceNotFound:
-        pass
+    return jsonify(dict(debug_info))
 
 
-    # let's assume it works
-    resp["loaded"] = True
-    resp["local_path"] = str(local_path)
-    resp["remote_path"] = str(remote_path)
 
-    resp["check"] = client.check(remote_path=str(remote_path))
+@blueprint.route('/health', methods=['GET', 'POST'])
+@cross_origin()
+def health():
+    """Home page."""
+    return jsonify({
+        "health": "ok"
+    })
 
-    # if file exists
-    if resp['check']:
-        # split for debugging
-        args = dict(
-            local_path=str(local_path),
-            remote_path=str(remote_path)
-        )
-        client.download(**args)
-    else:
-        logger.exception("download failed")
-        resp['message'] = str(e)
-        resp['loaded'] = False
 
-    resp["filename"] = filename
-    return jsonify(resp)
 
 @blueprint.route('/api/load', methods=['POST'])
 @cross_origin()
@@ -163,15 +221,7 @@ def dataset():
     # this can be a bit slow
     date_nums = ds.variables['date_time'][:]
 
-    def ensure_datetime(maybe_datetime):
-        """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
 
-        if hasattr(maybe_datetime, '_to_real_datetime'):
-            date = maybe_datetime._to_real_datetime()
-        else:
-            date = maybe_datetime
-
-        return date
     # if we have an actual range, use that
     try:
         times = netCDF4.num2date(
@@ -229,9 +279,9 @@ def extent():
     return jsonify(resp)
 
 
-@functools.lru_cache()
-def get_cdi_ids(dataset):
-    ds = get_ds(dataset)
+"""@functools.lru_cache()
+def get_cdi_ids():
+    ds = get_ds()
     # this takes 2 seconds
     for var_name,  var  in ds.variables.items():
         if var.long_name == 'LOCAL_CDI_ID':
@@ -241,11 +291,24 @@ def get_cdi_ids(dataset):
     logger.info('variable  cdi-id {}'.format(var_name))
     cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
     return cdi_ids
+"""
+@functools.lru_cache()
+def get_cdi_id_var(ds):
+
+    for var_name, var in ds.variables.items():
+        if var.long_name == "LOCAL_CDI_ID":
+            break
+    else:
+        raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
+
+    return var_name
+
+
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @cross_origin()
 def get_timeseries():
-    """Return timeseries for point data"""
+    """Return profile for point data"""
 
     cdi_id = request.values.get("cdi_id")
     cdi_id = str(cdi_id)
@@ -258,7 +321,8 @@ def get_timeseries():
             'error': 'data not loaded'
         })
 
-    cdi_ids = get_cdi_ids(dataset=dataset)
+    cdi_id_var = get_cdi_id_var(ds)
+    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
 
     # get the first
     idx = np.argmax(cdi_ids == cdi_id)
@@ -309,7 +373,7 @@ def get_timeseries():
 
     ds.close()
     meta_vars.update({
-            "date": date.isoformat(),
+            "date": ensure_datetime(date).isoformat(),
             "cdi_id": cdi_id,
             "lon": lon,
             "lat": lat
@@ -320,6 +384,9 @@ def get_timeseries():
         "meta": meta_vars
     }
     return jsonify(response)
+
+
+
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 @cross_origin()
@@ -415,11 +482,86 @@ def dataset_slice():
     ds.close()
     return jsonify(collection)
 
+@blueprint.route('/api/get_profiles', methods=['GET', 'POST']) # rename to profile as it is not timeseries
+@cross_origin()
+def get_profiles():
+    """ Return profile for selected points"""
+    # read inputs
+    cdi_ids_input = request.args.getlist("cdi_ids")
+
+    dataset = request.values.get("dataset")
+
+    ds = get_ds(dataset=dataset)
+    if ds is None:
+        return jsonify({
+            'error': 'data not loaded'
+        })
+    # get the variable that has the cdi_ids
+    cdi_id_var = get_cdi_id_var(ds = ds)
+
+    # create a list with all the cdi_ids
+    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
+
+    # create a list with the idxs of the given cdi_ids
+    idxs = []
+    for cdi_id in cdi_ids_input:
+
+        idx = np.argmax(cdi_ids == cdi_id)
+        idxs.append(idx)
+
+    # create a list with the var that contain the temperature, salinity and depth values
+    var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if (name.startswith('var') and not '_' in name)
+    ]
+
+    # prepare the output
+    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id"]
+    output = []
+    output.append(titles)
+
+    for idx in idxs:
+
+        cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
+
+        np.array2string(cdi_id)
 
 
-#TODO: Need a request to get all variables back
-# def get_variables():
-#     return ds.variables
+
+        idx_variables ={}
+        for var_name in var_names:
+            var = ds.variables[var_name]
+            try:
+                idx_variables[var.long_name] = var[idx]
+            except IdexError:
+                print ("failed to index {} with index {}".format(var,  idx))
+        cdi_id_array = np.empty(shape = idx_variables["Depth"].shape, dtype = '<U28')
+        cdi_id_array.fill(str(cdi_id))
+
+        c= np.array(list(zip(idx_variables["ITS-90 water temperature"],idx_variables["Water body salinity"],idx_variables["Depth"])))
+
+        df = pd.DataFrame(data=c)
+        df = df.dropna(how='all')
+        # create a list with lists of the values
+        ls = df.values.tolist()
+
+        #pass through all the lists of the list and append with the
+        # corresponding cdi_id
+        # every list: temperature, salinity, depth, cdi_id
+        for item in ls:
+            item.append(str(cdi_id))
+            output.append(item)
+
+
+    return jsonify(output)
+
+@login_manager.user_loader
+def load_user(user_id):
+    """user management"""
+    return User.get(user_id)
+
 
 def create_app():
     """Create an app."""
@@ -429,11 +571,13 @@ def create_app():
     app.secret_key = os.urandom(16)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
 
+    # add user sessions
+    login_manager.init_app(app)
 
-
+    # add urls
     app.register_blueprint(blueprint)
-    # make sure file is closed
-    # app.teardown_appcontext(close_ds)
+
+
     # add CORS to everything under /api/
     CORS(app, resources={r'/api/*': {'origins': '*'}})
 

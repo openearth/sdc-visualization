@@ -27,83 +27,19 @@
         <v-icon>fa-repeat</v-icon>
       </v-btn>
     </v-btn-toggle>
-    <v-btn @click.stop="configDialog = true"  icon text>
+    <v-btn @click.stop="showSettings = true"  icon flat>
       <v-icon>fa-gear</v-icon>
     </v-btn>
+    <!-- bubble up extent -->
+    <time-slider-settings
+        :show-settings.sync="showSettings"
+        :extent="extent"
+        @update:extent="$emit('update:extent', $event)"
+        :domain="domain"
+        :range.sync="range"
 
-    <v-dialog v-model="configDialog" max-width="100%">
-      <v-card>
-        <v-card-text>
-          <v-menu
-            ref="startDateMenu"
-            lazy
-            :close-on-content-click="false"
-            v-model="startDateMenu"
-            transition="scale-transition"
-            offset-y
-            full-width
-            :return-value.sync="startDate"
-            >
-            <v-text-field
-              slot="activator"
-              label="Picker in menu"
-              v-model="startDate"
-              prepend-icon="event"
-              readonly
-              ></v-text-field>
-            <v-date-picker
-              v-model="startDate"
-              :allowed-dates="allowedDates"
-              no-title
-              scrollable
-              >
-              <template slot-scope="{ save, cancel }">
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn text color="primary" @click.stop="startDateMenu = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click.stop="$refs.startDateMenu.save(startDate)">OK</v-btn>
-                </v-card-actions>
-              </template>
-            </v-date-picker>
-          </v-menu>
-          <v-menu
-            ref="endDateMenu"
-            lazy
-            :close-on-content-click="false"
-            v-model="endDateMenu"
-            transition="scale-transition"
-            offset-y
-            full-width
-            :return-value.sync="endDate"
-            >
-            <v-text-field
-              slot="activator"
-              label="Picker in menu"
-              v-model="endDate"
-              prepend-icon="event"
-              readonly
-              ></v-text-field>
-            <v-date-picker
-              v-model="endDate"
-              :allowed-dates="allowedDates"
-              no-title
-              scrollable
-              >
-              <template slot-scope="{ save, cancel }">
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn text color="primary" @click.stop="endDateMenu = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click.stop="$refs.endDateMenu.save(endDate)">OK</v-btn>
-                </v-card-actions>
-              </template>
-            </v-date-picker>
-          </v-menu>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text color="primary" @click.stop="configDialog=false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+
+        ></time-slider-settings>
   </v-toolbar>
 </template>
 <script src="./time-slider.js"></script>
