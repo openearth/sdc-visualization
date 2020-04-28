@@ -543,8 +543,11 @@ def get_profiles():
             item.append(str(cdi_id))
             output.append(item)       
 
-
-    return jsonify(output)
+        response = {
+            "data": output
+        }
+           
+    return jsonify(response)
 
 @login_manager.user_loader
 def load_user(user_id):
