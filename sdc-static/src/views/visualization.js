@@ -13,6 +13,7 @@ import store from '@/store.js'
 import layers from './ts-layers.json'
 import sources from  './ts-sources.json'
 
+import contours from '@/lib/contours.js'
 
 
 export default {
@@ -99,6 +100,7 @@ export default {
         this.loadFeature()
       })
       this.setFilter()
+      this.addObjects(this.map)
     })
   },
   computed: {
@@ -144,6 +146,17 @@ export default {
         .then(() => {
           this.loadLayers()
         })
+    },
+    addObjects (map) {
+      let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
+      let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
+      map.addLayer(customLayer, 'waterway-label');
+      url = "models/SDN_MedSea_Clim/polydata-Temperature-0000.vtk"
+      customLayer = contours.addObjectLayer(map, 'temp-0', url, 0x0055ff)
+      map.addLayer(customLayer, 'waterway-label');
+      // url = "static/polydata-Temperature-0003.vtk"
+      // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
+      // map.addLayer(customLayer, 'waterway-label');
     },
     setFilter () {
       let filter = [
