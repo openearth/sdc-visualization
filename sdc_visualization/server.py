@@ -270,6 +270,7 @@ def get_cdi_id_var(ds):
 
 
 
+@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @blueprint.route('/api/get_profile', methods=['GET', 'POST'])
 @cross_origin()
 def get_profile():
@@ -448,7 +449,6 @@ def dataset_slice():
     ds.close()
     return jsonify(collection)
 
-@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @blueprint.route('/api/get_profiles', methods=['GET', 'POST']) # rename to profile as it is not timeseries
 @cross_origin()
 def get_profiles():
