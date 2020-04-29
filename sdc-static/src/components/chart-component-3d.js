@@ -71,7 +71,7 @@ export default {
         })
         .then(response => {
           const result = response.json()
-          console.log( 'result', result)
+          console.log('result', result)
           return result
         })
         .then(json => {
@@ -81,30 +81,38 @@ export default {
           let options = {
             grid3D: {},
             xAxis3D: {
-              type: 'category'
+              name: 'Latitude'
             },
-            yAxis3D: {},
-            zAxis3D: {},
+            yAxis3D: {
+              name: 'Longitude'
+            },
+            zAxis3D: {
+              name: 'Depth',
+              inverse: true
+            },
+            visualMap: [{
+              dimension: 0,
+              max: 20,
+              min: 10,
+              inRange: {
+                color: ['#1710c0', '#0b9df0', '#00fea8', '#00ff0d', '#f5f811', '#f09a09', '#fe0300']
+              },
+              textStyle: {
+                color: '#000'
+              },
+            }],
             dataset: {
-              dimensions: [
-                'Water temperature',
-                'Water body salinity',
-                'Depth',
-                'cdi_id',
-                {
-                  name: 'Water temperature',
-                  type: 'ordinal'
-                }
-              ],
               source: data
             },
             series: [{
+              name: 'scattersdc',
               type: 'scatter3D',
               symbolSize: symbolSize,
               encode: {
-                x: 'cdi_id',
-                y: 'Water temperature',
+                x: 'lat',
+                y: 'lon',
                 z: 'Depth',
+                color: 'Water temperature',
                 tooltip: [0, 1, 2, 3, 4]
               }
             }]
