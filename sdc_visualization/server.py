@@ -17,8 +17,6 @@ import pyproj
 import pandas as pd
 import requests
 
-import webdav3.client
-
 from flask import Blueprint, Flask, Response, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
 from flask_login import LoginManager, login_user, login_manager, current_user, logout_user
@@ -32,6 +30,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
+# Debug
+test = Blueprint('test', __name__)
 # TODO: remove CORS from authentication
 CORS(blueprint)
 
@@ -100,6 +100,19 @@ def check_token(token):
         return 200
 
 
+
+# ensure datetime function
+def ensure_datetime(maybe_datetime):
+
+    """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
+
+    if hasattr(maybe_datetime, '_to_real_datetime'):
+        date = maybe_datetime._to_real_datetime()
+    else:
+        date = maybe_datetime
+
+    return date
+
 @blueprint.route('/login', methods=['POST'])
 def login():
     """Login"""
@@ -164,27 +177,7 @@ def load():
     # the filename string
     filename = req_data.get('filename')
 
-    # the expanded path
-    filepath = pathlib.Path(filename).expanduser()
-
-    resp = {"loaded": False}
-    if not filepath.suffix == '.nc':
-        resp["error"] = "filename does not end in .nc"
-        return jsonify(resp)
-    if not filepath.exists():
-        resp["error"] = "file does not exist"
-        return jsonify(resp)
-    print(req_data)
-    if req_data.get('copy', False):
-        tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
-        # copy the expanded file
-        shutil.copy(filepath, tmp_dir)
-        # replace filename with new filename
-        filename = str(pathlib.Path(tmp_dir) / filepath.name)
-    # add the dataset to the loaded app
-    # perhaps use flask.g, but that did not work
-    current_app.filename = filename
-    ds = get_ds()
+    ds = get_ds(dataset=filename)
     resp["loaded"] = True
     resp["filename"] = filename
     ds.close()
@@ -206,15 +199,6 @@ def dataset():
     # this can be a bit slow
     date_nums = ds.variables['date_time'][:]
 
-    def ensure_datetime(maybe_datetime):
-        """sometimes < 1582 we get netCDF4 datetimes which have an explicit Gregorian calendar"""
-
-        if hasattr(maybe_datetime, '_to_real_datetime'):
-            date = maybe_datetime._to_real_datetime()
-        else:
-            date = maybe_datetime
-
-        return date
     # if we have an actual range, use that
     try:
         times = netCDF4.num2date(
@@ -272,23 +256,25 @@ def extent():
     return jsonify(resp)
 
 
+
 @functools.lru_cache()
-def get_cdi_ids():
-    ds = get_ds()
-    # this takes 2 seconds
-    for var_name,  var  in ds.variables.items():
-        if var.long_name == 'LOCAL_CDI_ID':
+def get_cdi_id_var(ds):
+    #TODO we cant always be sure that LOCAL_CDI_ID is the var_name that we need
+    for var_name, var in ds.variables.items():
+        if var.long_name == "LOCAL_CDI_ID":
             break
     else:
         raise ValueError('no variable found with long_name  LOCAL_CDI_ID')
-    logger.info('variable  cdi-id {}'.format(var_name))
-    cdi_ids = netCDF4.chartostring(ds.variables[var_name][:])
-    return cdi_ids
+
+    return var_name
+
+
 
 @blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
+@blueprint.route('/api/get_profile', methods=['GET', 'POST'])
 @cross_origin()
-def get_timeseries():
-    """Return timeseries for point data"""
+def get_profile():
+    """Return profile for one cdi_id"""
 
     cdi_id = request.values.get("cdi_id")
     cdi_id = str(cdi_id)
@@ -301,7 +287,8 @@ def get_timeseries():
             'error': 'data not loaded'
         })
 
-    cdi_ids = get_cdi_ids()
+    cdi_id_var = get_cdi_id_var(ds)
+    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
 
     # get the first
     idx = np.argmax(cdi_ids == cdi_id)
@@ -351,11 +338,14 @@ def get_timeseries():
             meta_vars[var.long_name] = var[idx]
 
     ds.close()
+
+    # ensure date time
+    date = ensure_datetime(date)
     meta_vars.update({
-            "date": date.isoformat(),
-            "cdi_id": cdi_id,
-            "lon": lon,
-            "lat": lat
+        "date": date.isoformat(),
+        "cdi_id": cdi_id,
+        "lon": lon,
+        "lat": lat
     })
 
     response = {
@@ -363,6 +353,7 @@ def get_timeseries():
         "meta": meta_vars
     }
     return jsonify(response)
+
 
 @blueprint.route('/api/slice', methods=['GET', 'POST'])
 @cross_origin()
@@ -457,6 +448,93 @@ def dataset_slice():
     collection = geojson.FeatureCollection(features=features)
     ds.close()
     return jsonify(collection)
+
+@blueprint.route('/api/get_profiles', methods=['GET', 'POST']) # rename to profile as it is not timeseries
+@cross_origin()
+def get_profiles():
+    """ Return profile for selected points"""
+    # read inputs
+    cdi_ids_input = request.args.getlist("cdi_ids")
+
+    dataset = request.values.get("dataset")
+
+    ds = get_ds(dataset=dataset)
+    if ds is None:
+        return jsonify({
+            'error': 'data not loaded'
+        })
+    # get the variable that has the cdi_ids
+    cdi_id_var = get_cdi_id_var(ds = ds)
+
+    # create a list with all the cdi_ids
+    cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
+
+    # create a list with the idxs of the given cdi_ids
+    idxs = []
+    for cdi_id in cdi_ids_input:
+
+        idx = np.argmax(cdi_ids == cdi_id)
+        idxs.append(idx)
+
+    # create a list with the var that contain the temperature, salinity and depth values
+    var_names = [
+        name
+        for name, var
+        in ds.variables.items()
+        if (name.startswith('var') and not '_' in name)
+    ]
+
+    # prepare the output
+    # TODO take a look at these hardcoded names. Either be an input in the function or something more generic
+    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id"]
+    output = []
+    output.append(titles)
+
+    for idx in idxs:
+
+        cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
+
+        np.array2string(cdi_id)
+
+
+
+        idx_variables ={}
+        for var_name in var_names:
+            var = ds.variables[var_name]
+            try:
+                idx_variables[var.long_name] = var[idx]
+            except IdexError:
+                print ("failed to index {} with index {}".format(var,  idx))
+        cdi_id_array = np.empty(shape = idx_variables["Depth"].shape, dtype = '<U28')
+        cdi_id_array.fill(str(cdi_id))
+
+        c = np.array(
+            list(
+                zip(
+                    idx_variables["ITS-90 water temperature"],
+                    idx_variables["Water body salinity"],
+                    idx_variables["Depth"]
+                )
+            )
+        )
+
+        df = pd.DataFrame(data=c)
+        df = df.dropna(how='all')
+        # create a list with lists of the values
+        ls = df.values.tolist()
+
+        #pass through all the lists of the list and append with the
+        # corresponding cdi_id
+        # every list: temperature, salinity, depth, cdi_id
+        for item in ls:
+            item.append(str(cdi_id))
+            output.append(item)
+
+    response = {
+        "data": output
+    }
+
+    return jsonify(response)
 
 @login_manager.user_loader
 def load_user(user_id):
