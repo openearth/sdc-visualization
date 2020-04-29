@@ -16,6 +16,7 @@ import geojson
 import pyproj
 import pandas as pd
 import requests
+import simplejson
 
 from flask import Blueprint, Flask, Response, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
@@ -507,13 +508,16 @@ def get_profiles():
 
     # prepare the output
     # TODO take a look at these hardcoded names. Either be an input in the function or something more generic
-    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id"]
+    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id", "lat", "lat"]
     output = []
     output.append(titles)
 
     for idx in idxs:
 
         cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
+        lon = ds.variables['longitude'][idx].item(0)
+        lat = ds.variables['latitude'][idx].item(0)
+        
 
         np.array2string(cdi_id)
 
@@ -548,14 +552,16 @@ def get_profiles():
         # corresponding cdi_id
         # every list: temperature, salinity, depth, cdi_id
         for item in ls:
-            item.append(str(cdi_id))
+            item.extend((str(cdi_id), round(lat,4), round(lon,4)))
+            #item.append(str(cdi_id))
             output.append(item)
 
-        response = {
-            "data": output
-        }
-
-    return json.dumps(response, allow_nan=False)
+    response = {
+        "data": output
+    }
+    
+    #, allow_nan=False
+    return simplejson.dumps(response, ignore_nan=True)
 
 @login_manager.user_loader
 def load_user(user_id):
