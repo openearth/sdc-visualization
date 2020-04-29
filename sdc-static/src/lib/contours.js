@@ -3,8 +3,6 @@ import {VTKLoader} from 'three/examples/jsm/loaders/VTKLoader.js'
 import mapboxgl from 'mapbox-gl'
 
 
-console.log('mapboxgl', mapboxgl, mapboxgl.MercatorCoordinate)
-
 function addObjectLayer(map, id, url, color) {
 
   // metadata
@@ -34,9 +32,11 @@ function addObjectLayer(map, id, url, color) {
   }
 
   // parameters to ensure the model is georeferenced correctly on the map
-  var multiplyZ = 5
+  var multiplyZ = 0.000005
+
   var modelOrigin = [0, 0] // metadata.lon_min, metadata.lat_min]
-  var modelAltitude = 0;
+  // modelOrigin = [0.5, 0.5]
+  var modelAltitude = 300;
   var modelRotate = [0, 0, 0];
 
   var modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
@@ -45,13 +45,16 @@ function addObjectLayer(map, id, url, color) {
   );
   var modelScale = modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
 
-
+  modelScale = 1
 
   // transformation parameters to position, rotate and scale the 3D model onto the map
   var modelTransform = {
-    translateX: modelAsMercatorCoordinate.x,
-    translateY: modelAsMercatorCoordinate.y,
-    translateZ: modelAsMercatorCoordinate.z,
+    // translateX: modelAsMercatorCoordinate.x,
+    // translateY: modelAsMercatorCoordinate.y,
+    // translateZ: modelAsMercatorCoordinate.z,
+    translateX: 0,
+    translateY: 0,
+    translateZ: 0,
     rotateX: modelRotate[0],
     rotateY: modelRotate[1],
     rotateZ: modelRotate[2],
@@ -60,6 +63,7 @@ function addObjectLayer(map, id, url, color) {
      */
     scale: modelScale
   };
+  console.log(modelTransform)
 
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   var customLayer = {
@@ -67,27 +71,29 @@ function addObjectLayer(map, id, url, color) {
     type: 'custom',
     renderingMode: '3d',
     onAdd: function(map, gl) {
-      this.camera = new THREE.Camera();
+      this.camera = new THREE.PerspectiveCamera();
+      this.camera.far = 8000;
+      this.camera.near = 0.001
       this.scene = new THREE.Scene();
 
       // create two three.js lights to illuminate the model
       var directionalLight = new THREE.DirectionalLight(0xffffff);
-      directionalLight.position.set(0, -70, 100).normalize();
+      directionalLight.position.set(0.5, 0.1, 0.1).normalize();
       directionalLight.castShadow = true;
       this.scene.add(directionalLight);
 
       var directionalLight2 = new THREE.DirectionalLight(0xffffff);
-      directionalLight2.position.set(0, 70, 100).normalize();
+      directionalLight2.position.set(0.5, 0.5, 0.1).normalize();
       directionalLight2.castShadow = true;
       this.scene.add(directionalLight2);
 
 
-      const floor = new THREE.Mesh(
-        new THREE.PlaneBufferGeometry(50, 50),
-        new THREE.MeshPhongMaterial({
-          color: "white"
-        })
-      );
+      // const floor = new THREE.Mesh(
+      //   new THREE.PlaneBufferGeometry(50, 50),
+      //   new THREE.MeshPhongMaterial({
+      //     color: "white"
+      //   })
+      // );
 
       // TODO: add a floor to cast shadows
       // https://stackoverflow.com/questions/58243572/unable-to-cast-a-shadow-with-three-js-and-mapbox-gl
@@ -108,13 +114,13 @@ function addObjectLayer(map, id, url, color) {
           var material = new THREE.MeshPhysicalMaterial({
             color: color,
             flatShading: false,
-            transparency: 0.8,
+            transparency: 0.6,
             metalness: 0.1,
             roughness: 0.8,
             alphaTest: 0.5,
             side: THREE.DoubleSide,
             transparent: true,
-            emissive: 0xa09999,
+            emissive: 0x202929,
             opacity: 1
           });
           var mesh = new THREE.Mesh(geometry, material);
@@ -124,8 +130,10 @@ function addObjectLayer(map, id, url, color) {
 
           this.scene.add(mesh);
           mesh.scale.z = multiplyZ;
+          mesh.translateZ(0.005)
           mesh.castShadow = true;
           mesh.receiveShadow = true;
+          window.mesh = mesh
         }.bind(this)
       );
 
@@ -166,7 +174,7 @@ function addObjectLayer(map, id, url, color) {
           .scale(
             new THREE.Vector3(
               modelTransform.scale,
-              -modelTransform.scale,
+              modelTransform.scale,
               modelTransform.scale
             )
           )

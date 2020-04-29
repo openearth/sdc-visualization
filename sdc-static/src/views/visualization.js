@@ -34,7 +34,7 @@ export default {
 
     return {
       menuDrawer: false,
-      plotDrawer: true,
+      plotDrawer: false,
       map: null,
       extent: extent,
       domain: domain,
@@ -54,6 +54,12 @@ export default {
     // now we can request to load  layer data
 
     this.map = this.$refs.map.map
+
+
+    this.map.on('style.load', () => {
+      this.addObjects(this.map)
+    })
+
     this.map.on('load', () => {
 
       // this.map.addSource("sdc-med-profiles", {
@@ -71,6 +77,7 @@ export default {
       layers.forEach(layer => {
         this.map.addLayer(layer)
       })
+
 
       this.map.on('mousemove', (e) => {
         let year = this.range[1].year()
@@ -100,7 +107,6 @@ export default {
         this.loadFeature()
       })
       this.setFilter()
-      this.addObjects(this.map)
     })
   },
   computed: {
@@ -148,12 +154,31 @@ export default {
         })
     },
     addObjects (map) {
-      let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
-      let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
-      map.addLayer(customLayer, 'waterway-label');
-      url = "models/SDN_MedSea_Clim/polydata-Temperature-0000.vtk"
-      customLayer = contours.addObjectLayer(map, 'temp-0', url, 0x0055ff)
-      map.addLayer(customLayer, 'waterway-label');
+      // let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
+      // let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
+      // map.addLayer(customLayer, 'waterway-label');
+
+      let dirs = [
+        "models/SDN_ArcticOcean_Clim",
+        "models/SDN_BalticSea_Clim",
+        "models/SDN_BlackSea_Clim",
+        "models/SDN_MedSea_Clim",
+        "models/SDN_NorthAtlanticOcean_Clim"
+      ]
+      dirs.forEach((dir) => {
+        let url = dir + "/polydata-Temperature-0000.vtk"
+        let id = dir + '-0'
+        let customLayer = contours.addObjectLayer(map, id, url, 0x0022ff)
+        map.addLayer(customLayer, 'waterway-label');
+        url = dir + "/polydata-Temperature-0003.vtk"
+        id = dir + '-3'
+        customLayer = contours.addObjectLayer(map, id, url, 0xff2244)
+        map.addLayer(customLayer, 'waterway-label')
+        url = dir + "/polydata-Temperature-0001.vtk"
+        id = dir + '-1'
+        customLayer = contours.addObjectLayer(map, id, url, 0x22ff44)
+        map.addLayer(customLayer, 'waterway-label')
+      })
       // url = "static/polydata-Temperature-0003.vtk"
       // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
       // map.addLayer(customLayer, 'waterway-label');
