@@ -14,88 +14,87 @@
     <v-btn-toggle v-model="state" mandatory v-if="showPlay">
       <!-- call play function so timer gets updated -->
       <!-- TODO: use buttons that stay pressed (lookup material design guideline) -->
-      <v-btn value="playing" text @click.stop="play">
+      <v-btn value="playing" small icon @click.stop="play">
         <v-icon>fa-play</v-icon>
       </v-btn>
-      <v-btn value="paused" text @click.stop="pause">
+      <v-btn value="paused" small icon @click.stop="pause">
         <v-icon>fa-pause</v-icon>
       </v-btn>
     </v-btn-toggle>
-    <v-btn-toggle v-model="loop" v-if="showPlay">
+    <v-btn-toggle v-model="loop" small icon v-if="showPlay">
       <!-- somehow this ends op as null/true instead of false/true -->
       <v-btn :value="true" text>
         <v-icon>fa-repeat</v-icon>
       </v-btn>
     </v-btn-toggle>
-    <v-btn @click.stop="configDialog = true"  icon text>
+    <!-- <v-btn @click.stop="configDialog = true"  icon text>
       <v-icon>fa-gear</v-icon>
-    </v-btn>
+    </v-btn> -->
 
     <v-dialog v-model="configDialog" max-width="100%">
       <v-card>
+        <v-card-title>
+          Timeslider settings
+        </v-card-title>
         <v-card-text>
           <v-menu
             ref="startDateMenu"
             lazy
-            :close-on-content-click="false"
+            :close-on-content-click="true"
             v-model="startDateMenu"
             transition="scale-transition"
             offset-y
-            full-width
-            :return-value.sync="startDate"
+            full-wid
             >
-            <v-text-field
-              slot="activator"
-              label="Picker in menu"
-              v-model="startDate"
-              prepend-icon="event"
-              readonly
-              ></v-text-field>
+            <template v-slot:activator="{on}">
+              <v-text-field
+                slot="activator"
+                label="Start date"
+                :value="startDate"
+                prepend-icon="event"
+                readonly
+                v-on="on"
+                ></v-text-field>
+
+            </template>
             <v-date-picker
+              ref="startDatePicker"
               v-model="startDate"
-              :allowed-dates="allowedDates"
+              :min="allowedDates.min"
+              :max="allowedDates.max"
+              reactive
               no-title
               scrollable
               >
-              <template slot-scope="{ save, cancel }">
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn text color="primary" @click.stop="startDateMenu = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click.stop="$refs.startDateMenu.save(startDate)">OK</v-btn>
-                </v-card-actions>
-              </template>
             </v-date-picker>
           </v-menu>
           <v-menu
             ref="endDateMenu"
             lazy
-            :close-on-content-click="false"
+            :close-on-content-click="true"
             v-model="endDateMenu"
             transition="scale-transition"
             offset-y
-            full-width
-            :return-value.sync="endDate"
             >
-            <v-text-field
-              slot="activator"
-              label="Picker in menu"
-              v-model="endDate"
-              prepend-icon="event"
-              readonly
-              ></v-text-field>
+            <template v-slot:activator="{on}">
+              <v-text-field
+                slot="activator"
+                label="End date"
+                :value="endDate"
+                prepend-icon="event"
+                readonly
+                v-on="on"
+                ></v-text-field>
+            </template>
             <v-date-picker
+              ref="endDatePicker"
               v-model="endDate"
-              :allowed-dates="allowedDates"
+              :min="allowedDates.min"
+              :max="allowedDates.max"
+              reactive
               no-title
               scrollable
               >
-              <template slot-scope="{ save, cancel }">
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn text color="primary" @click.stop="endDateMenu = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click.stop="$refs.endDateMenu.save(endDate)">OK</v-btn>
-                </v-card-actions>
-              </template>
             </v-date-picker>
           </v-menu>
         </v-card-text>

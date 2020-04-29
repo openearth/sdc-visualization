@@ -548,7 +548,7 @@ def get_profiles():
             "data": output
         }
 
-    return json.dump(response, allow_nan=False)
+    return json.dumps(response, allow_nan=False)
 
 @login_manager.user_loader
 def load_user(user_id):

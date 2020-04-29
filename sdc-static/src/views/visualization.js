@@ -118,7 +118,7 @@ export default {
       this.map.on('mousemove', (e) => {
         // let year = this.dateRange[1]
         // let yearRange = _.range(this.dateRange[0], this.dateRange[1])
-        // set bbox as 5px reactangle area around clicked point
+        // set bbox as 5px reactangle area around clic ked point
         let buffer = 2
         let bbox = [
           [e.point.x - buffer, e.point.y - buffer],

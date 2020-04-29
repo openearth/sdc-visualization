@@ -35,7 +35,6 @@ export default new Vuex.Store({
       Vue.set(state, 'feature', feature)
     },
     series(state, series) {
-      console.log(series, 'series')
       Vue.set(state, 'series', series)
     },
     dataTable(state, dataTable) {
@@ -71,8 +70,6 @@ export default new Vuex.Store({
   },
   actions: {
     loadData({
-      commit,
-      dispatch,
       state
     }) {
       bus.$emit('message', 'Opening file. This will take a while (30s).')
@@ -99,14 +96,12 @@ export default new Vuex.Store({
           const result = response.json()
           return result
         })
-        .then(json => {
-          console.log('reponse from load', json)
+        .then(() => {
           bus.$emit('message', 'File opened, wait for metadata to load to continue to the visualisation.')
         })
     },
     loadMetadata({
       commit,
-      dispatch,
       state
     }) {
       const url = state.serverUrl + `/api/dataset`
@@ -129,7 +124,6 @@ export default new Vuex.Store({
       commit,
       state
     }) {
-      console.log('loadLayerData', state.requestedYears)
       const heatmapPaint = {
         "heatmap-opacity": 1,
         "heatmap-color": [
@@ -210,34 +204,16 @@ export default new Vuex.Store({
         commit('dataTable', json)
       })
     },
-    // loadPoint({
-    //   state,
-    //   commit
-    // }) {
-    //   let pt = state.point
-    //   let url = `${state.serverUrl}/api/get_timeseries?lon=${pt.lng}&lat=${pt.lat}`
-    //   return fetch(url)
-    //     .then((res) => {
-    //       return res.json();
-    //     })
-    //     .then((json) => {
-    //       commit('series', json)
-    //     })
-    //
-    //
-    // },
     loadFeature({
       state,
       commit
     }) {
       let feature = state.feature
-      console.log('loading', feature)
       let searchParams = new URLSearchParams()
       searchParams.append('cdi_id', feature.properties.cdi_id)
       searchParams.append('dataset', feature.properties.dataset)
       let searchString = searchParams.toString()
-      let url = `${state.serverUrl}/api/get_timeseries?${searchParams}`
-      console.log('loading ', url)
+      let url = `${state.serverUrl}/api/get_profile?${searchParams}`
       return fetch(url)
         .then((res) => {
           return res.json();
@@ -246,9 +222,6 @@ export default new Vuex.Store({
           console.log('yes timeseries loaded')
           commit('series', json)
         })
-
-
     }
-
   }
 })
