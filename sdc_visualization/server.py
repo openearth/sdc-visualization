@@ -508,7 +508,7 @@ def get_profiles():
 
     # prepare the output
     # TODO take a look at these hardcoded names. Either be an input in the function or something more generic
-    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id", "lat", "lat"]
+    titles = ["Water temperature", "Water body salinity", "Depth" , "cdi_id", "lat", "lon"]
     output = []
     output.append(titles)
 
