@@ -1,4 +1,5 @@
 import pathlib
+import logging
 
 from flask import current_app, g
 import netCDF4
@@ -8,6 +9,8 @@ def get_ds(dataset=None):
     if dataset is None:
         dataset  = 'data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
 
+def get_ds(dataset=None):
+    """get the dataset"""
     data_dirs = [
         # the data in the docker container
         pathlib.Path('/data/public/profiles'),
@@ -19,10 +22,18 @@ def get_ds(dataset=None):
     for data_dir in data_dirs:
         if data_dir.is_dir():
             break
-    else:
-        raise ValueError('data directory not found. Tried {}'.format(data_dirs))
+        elif data_dir == data_dirs[-1]:
+            raise ValueError('data directory not found. Tried {}'.format(data_dirs))
 
-    filename =  data_dir  / dataset
+    if dataset is not None:
+        filename =  data_dir  / dataset
+    else:
+        if hasattr(current_app, 'dataset'):
+            # TODO: where does this come from?
+            filename = data_dir /  current_app.dataset
+        else:
+            filename = data_dir  / 'data_from_SDN_2015-09_TS_MedSea_QC_done_v2.nc'
+
     ds = load_dataset(filename)
     return ds
 

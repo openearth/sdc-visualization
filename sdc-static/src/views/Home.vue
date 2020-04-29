@@ -33,7 +33,7 @@
         {{ message }}
         <v-btn
             dark
-            flat
+            text
             @click="snackbar = false"
             >
             Close

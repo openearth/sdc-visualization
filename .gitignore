@@ -7,6 +7,10 @@ data/*.nc
 data/*.tar.gz
 data/*.tgz
 data/*.txt
+data/*/*.nc
+data/*/*.tar.gz
+data/*/*.tgz
+data/*/*.txt
 
 
 # Byte-compiled / optimized / DLL files

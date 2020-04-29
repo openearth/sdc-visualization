@@ -177,7 +177,28 @@ def load():
     # the filename string
     filename = req_data.get('filename')
 
-    ds = get_ds(dataset=filename)
+    logger.debug(filename, pathlib.Path(filename).expanduser())
+    # the expanded path
+    filepath = pathlib.Path(filename).expanduser()
+
+    resp = {"loaded": False}
+    if not filepath.suffix == '.nc':
+        resp["error"] = "filename does not end in .nc"
+        return jsonify(resp)
+    if not filepath.exists():
+        resp["error"] = "file does not exist"
+        return jsonify(resp)
+    print(req_data)
+    if req_data.get('copy', False):
+        tmp_dir = tempfile.mkdtemp(prefix='sdc-', suffix='-remove')
+        # copy the expanded file
+        shutil.copy(filepath, tmp_dir)
+        # replace filename with new filename
+        filename = str(pathlib.Path(tmp_dir) / filepath.name)
+    # add the dataset to the loaded app
+    # perhaps use flask.g, but that did not work
+    current_app.filename = filename
+    ds = get_ds()
     resp["loaded"] = True
     resp["filename"] = filename
     ds.close()
@@ -530,11 +551,11 @@ def get_profiles():
             item.append(str(cdi_id))
             output.append(item)
 
-    response = {
-        "data": output
-    }
+        response = {
+            "data": output
+        }
 
-    return jsonify(response)
+    return json.dumps(response, allow_nan=False)
 
 @login_manager.user_loader
 def load_user(user_id):
