@@ -17,8 +17,6 @@ import pyproj
 import pandas as pd
 import requests
 
-import webdav3.client
-
 from flask import Blueprint, Flask, Response, jsonify, session, current_app, request, g, redirect
 from flask_cors import CORS, cross_origin
 from flask_login import LoginManager, login_user, login_manager, current_user, logout_user
@@ -293,6 +291,7 @@ def get_cdi_id_var(ds):
 
 
 
+@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
 @blueprint.route('/api/get_profile', methods=['GET', 'POST'])
 @cross_origin()
 def get_profile():
@@ -364,10 +363,10 @@ def get_profile():
     # ensure date time
     date = ensure_datetime(date)
     meta_vars.update({
-            "date": date.isoformat(),
-            "cdi_id": cdi_id,
-            "lon": lon,
-            "lat": lat
+        "date": date.isoformat(),
+        "cdi_id": cdi_id,
+        "lon": lon,
+        "lat": lat
     })
 
     response = {
@@ -530,7 +529,15 @@ def get_profiles():
         cdi_id_array = np.empty(shape = idx_variables["Depth"].shape, dtype = '<U28')
         cdi_id_array.fill(str(cdi_id))
 
-        c= np.array(list(zip(idx_variables["ITS-90 water temperature"],idx_variables["Water body salinity"],idx_variables["Depth"])))
+        c = np.array(
+            list(
+                zip(
+                    idx_variables["ITS-90 water temperature"],
+                    idx_variables["Water body salinity"],
+                    idx_variables["Depth"]
+                )
+            )
+        )
 
         df = pd.DataFrame(data=c)
         df = df.dropna(how='all')

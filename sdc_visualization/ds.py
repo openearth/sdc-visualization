@@ -4,16 +4,20 @@ import logging
 from flask import current_app, g
 import netCDF4
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
+def get_ds(dataset=None):
+    """get the dataset"""
+    if dataset is None:
+        dataset  = 'data_from_SDN_2017-11_TS_profiles_non-restricted_med.nc'
 
 def get_ds(dataset=None):
     """get the dataset"""
     data_dirs = [
-        pathlib.Path('~/data/odv').expanduser(),
-        pathlib.Path('app/data'),
-        pathlib.Path('./data/odv')
+        # the data in the docker container
+        pathlib.Path('/data/public/profiles'),
+        pathlib.Path('/data/public'),
+        # on Fedor's computer...
+        pathlib.Path('~/data/odv/profiles').expanduser(),
+        pathlib.Path('~/data/odv').expanduser()
     ]
     for data_dir in data_dirs:
         if data_dir.is_dir():
