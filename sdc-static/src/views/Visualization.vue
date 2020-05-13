@@ -77,6 +77,7 @@
   <map-settings :showMapSettings.sync="showMapSettings" :map="map">
   </map-settings>
 
+  <disclaimer />
 </div>
 </template>
 

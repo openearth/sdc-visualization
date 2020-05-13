@@ -6,7 +6,7 @@ import {
 // todo: use proper date formatting
 // import moment from 'moment'
 import _ from 'lodash'
-
+import Disclaimer from '@/components/Disclaimer'
 import timeSlider from '@/components/TimeSlider'
 import depthSlider from '@/components/DepthSlider'
 import chartComponent from '@/components/ChartComponent'
@@ -26,7 +26,8 @@ export default {
     "v-depth-slider": depthSlider,
     "chart-component": chartComponent,
     "map-settings": mapSettings,
-    'chart-component-3d': chartComponent3D
+    'chart-component-3d': chartComponent3D,
+    Disclaimer
   },
   data() {
 
