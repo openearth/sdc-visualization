@@ -56,7 +56,6 @@ export default {
 
     },
     createGraph() {
-      console.log('create graph')
       var dom = document.getElementById("chart-container")
       this.graph = echarts.init(dom)
     },
@@ -71,24 +70,46 @@ export default {
         })
         .then(response => {
           const result = response.json()
-          console.log('result', result)
           return result
         })
         .then(json => {
-          console.log('fetchted', json)
           const data = json.data
+          let lat = [data[1][4], data[1][4]]
+          let lon = [data[1][5], data[1][5]]
+
+          data.forEach((row, i) => {
+            if (i === 0) {
+            } else {
+              row[2] = 0 - row[2]
+              if (row[4] > lat[1]) {
+                lat[1] = row[4]
+              }
+              if (row[4] < lat[0]) {
+                lat[0] = row[4]
+              }
+              if (row[5] > lon[1]) {
+                lon[1] = row[5]
+              }
+              if (row[5] < lon[0]) {
+                lon[0] = row[5]
+              }
+            }
+          })
           const symbolSize = 2.5
           let options = {
             grid3D: {},
             xAxis3D: {
-              name: 'Latitude'
+              name: 'Latitude',
+              min: lat[0],
+              max: lat[1]
             },
             yAxis3D: {
-              name: 'Longitude'
+              name: 'Longitude',
+              min: lon[0],
+              max: lon[1]
             },
             zAxis3D: {
               name: 'Depth',
-              inverse: true
             },
             visualMap: [{
               dimension: 0,
@@ -116,7 +137,8 @@ export default {
                 tooltip: [0, 1, 2, 3, 4]
               }
             }]
-          };
+          }
+          this.graph.clear()
           this.graph.setOption(options)
           // this.graph.setOption(this.option, true)
         })
