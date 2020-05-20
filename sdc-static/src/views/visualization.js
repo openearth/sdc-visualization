@@ -20,18 +20,8 @@ import sources from './ts-sources.json'
 import meta from '../../public/models/meta.json'
 import contours from '@/lib/contours.js'
 
-
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
-
-
-// let dirs = [
-//   "models/SDN_ArcticOcean_Clim",
-//   "models/SDN_BalticSea_Clim",
-//   "models/SDN_BlackSea_Clim",
-//   "models/SDN_MedSea_Clim",
-//   "models/SDN_NorthAtlanticOcean_Clim"
-// ]
 
 export default {
   store,
@@ -219,9 +209,6 @@ export default {
         })
     },
     addObjects(map) {
-      // let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
-      // let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
-      // map.addLayer(customLayer, 'waterway-label');
       this.objectLayers = {}
       meta.forEach((model) => {
 
@@ -238,39 +225,12 @@ export default {
           }
         })
       })
-      console.log(this.objectLayers)
-
-      // dirs.forEach((dir) => {
-      //   let url = dir + "/polydata-Temperature-0000.vtk"
-      //   let id = dir + '-0'
-      //   let customLayer = contours.addObjectLayer(map, id, url, 0x0022ff)
-      //   map.addLayer(customLayer, 'waterway-label');
-      //   url = dir + "/polydata-Temperature-0003.vtk"
-      //   id = dir + '-3'
-      //   customLayer = contours.addObjectLayer(map, id, url, 0xff2244)
-      //   map.addLayer(customLayer, 'waterway-label')
-      //   url = dir + "/polydata-Temperature-0001.vtk"
-      //   id = dir + '-1'
-      //   customLayer = contours.addObjectLayer(map, id, url, 0x22ff44)
-      //   map.addLayer(customLayer, 'waterway-label')
-      // })
-      // url = "static/polydata-Temperature-0003.vtk"
-      // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
-      // map.addLayer(customLayer, 'waterway-label');
     },
     toggleObject3D() {
       const vis = this.showObject3D ? 'visible' : 'none'
       this.objectLayers[this.object3DType].forEach (layer => {
         this.map.setLayoutProperty(layer, 'visibility', vis)
       })
-      //
-      // dirs.forEach((dir) => {
-      //   let id = dir + '-0'
-      //   id = dir + '-3'
-      //   this.map.setLayoutProperty(id, 'visibility', vis)
-      //   id = dir + '-1'
-      //   this.map.setLayoutProperty(id, 'visibility', vis)
-      // })
     },
     setFilter() {
       let filter = [
