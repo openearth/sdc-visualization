@@ -14,13 +14,23 @@ import mapSettings from '@/components/MapSettings'
 import chartComponent3D from '@/components/ChartComponent3D'
 import store from '@/store.js'
 import layers from './ts-layers.json'
-import sources from  './ts-sources.json'
+import sources from './ts-sources.json'
 
 import contours from '@/lib/contours.js'
 
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
+
+
+let dirs = [
+  "models/SDN_ArcticOcean_Clim",
+  "models/SDN_BalticSea_Clim",
+  "models/SDN_BlackSea_Clim",
+  "models/SDN_MedSea_Clim",
+  "models/SDN_NorthAtlanticOcean_Clim"
+]
+
 export default {
   store,
   name: 'visualization',
@@ -38,6 +48,9 @@ export default {
       showMapSettings: false,
       menuDrawer: false,
       plotDrawer: false,
+      object3DDrawer: false,
+      showObject3D: true,
+      object3DType: 'salinity',
       map: null,
       end: 2015,
       begin: 2000,
@@ -202,18 +215,12 @@ export default {
           this.loadLayers()
         })
     },
-    addObjects (map) {
+    addObjects(map) {
       // let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
       // let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
       // map.addLayer(customLayer, 'waterway-label');
 
-      let dirs = [
-        "models/SDN_ArcticOcean_Clim",
-        "models/SDN_BalticSea_Clim",
-        "models/SDN_BlackSea_Clim",
-        "models/SDN_MedSea_Clim",
-        "models/SDN_NorthAtlanticOcean_Clim"
-      ]
+
       dirs.forEach((dir) => {
         let url = dir + "/polydata-Temperature-0000.vtk"
         let id = dir + '-0'
@@ -232,7 +239,19 @@ export default {
       // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
       // map.addLayer(customLayer, 'waterway-label');
     },
-    setFilter () {
+    toggleObject3D() {
+      const vis = this.showObject3D ? 'visible' : 'none'
+
+      dirs.forEach((dir) => {
+        let id = dir + '-0'
+        this.map.setLayoutProperty(id, 'visibility', vis)
+        id = dir + '-3'
+        this.map.setLayoutProperty(id, 'visibility', vis)
+        id = dir + '-1'
+        this.map.setLayoutProperty(id, 'visibility', vis)
+      })
+    },
+    setFilter() {
       let filter = [
         'all',
         ['>=', 'year', this.dateRange[0]],
@@ -245,6 +264,7 @@ export default {
         this.map.setFilter(layer, filter)
       })
     },
+
     getTimeRange() {
       fetch(`${store.state.serverUrl}/api/extent`, {
           method: "GET"

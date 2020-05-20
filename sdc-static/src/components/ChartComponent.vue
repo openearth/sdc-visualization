@@ -20,8 +20,20 @@
                 </div>
             </v-flex>
             <v-flex>
-                <v-btn @click="saveCsv"><v-icon>cloud_download</v-icon></v-btn>
-                <v-btn @click="saveImage"><v-icon>image</v-icon></v-btn>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" @click="saveCsv"><v-icon>cloud_download</v-icon></v-btn>
+
+                </template>
+                <span>Download csv file.</span>
+              </v-tooltip>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on"  @click="saveImage"><v-icon>image</v-icon></v-btn>
+
+                </template>
+                <span>Download the picture as png.</span>
+              </v-tooltip>
             </v-flex>
         </v-layout>
     </v-container>
