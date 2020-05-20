@@ -11,9 +11,8 @@
       </v-card-title>
       <v-card-text>
         <v-form>
-          <v-select v-model="object3DType" :items="['salinity', 'Temperature']"></v-select>
+          <v-select v-model="object3DType" :items="Object.keys(objectLayers)" @change="toggleObject3D"></v-select>
           <v-switch v-model="showObject3D" class="mx-2" label="Show 3d map layer" @change="toggleObject3D"></v-switch>
-
         </v-form>
       </v-card-text>
     </v-card>

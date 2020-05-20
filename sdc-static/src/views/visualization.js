@@ -16,6 +16,8 @@ import store from '@/store.js'
 import layers from './ts-layers.json'
 import sources from './ts-sources.json'
 
+// TODO: change to fetch
+import meta from '../../public/models/meta.json'
 import contours from '@/lib/contours.js'
 
 
@@ -55,6 +57,7 @@ export default {
       end: 2015,
       begin: 2000,
       dateRange: [2014, 2015],
+      objectLayers: {},
       timeRange: [],
       graphData: {
         time: [],
@@ -219,37 +222,53 @@ export default {
       // let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
       // let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
       // map.addLayer(customLayer, 'waterway-label');
+      this.objectLayers = {}
+      meta.forEach((model) => {
 
+        const variable = _.get(this.objectLayers, model.variable)
+        model.paths.forEach((path) => {
 
-      dirs.forEach((dir) => {
-        let url = dir + "/polydata-Temperature-0000.vtk"
-        let id = dir + '-0'
-        let customLayer = contours.addObjectLayer(map, id, url, 0x0022ff)
-        map.addLayer(customLayer, 'waterway-label');
-        url = dir + "/polydata-Temperature-0003.vtk"
-        id = dir + '-3'
-        customLayer = contours.addObjectLayer(map, id, url, 0xff2244)
-        map.addLayer(customLayer, 'waterway-label')
-        url = dir + "/polydata-Temperature-0001.vtk"
-        id = dir + '-1'
-        customLayer = contours.addObjectLayer(map, id, url, 0x22ff44)
-        map.addLayer(customLayer, 'waterway-label')
+          let customLayer = contours.addObjectLayer(map, path, path, 0x0022ff, model)
+          map.addLayer(customLayer, 'waterway-label')
+
+          if (variable) {
+            variable.push(path)
+          }
+        })
       })
+      console.log(objectLayers)
+
+      // dirs.forEach((dir) => {
+      //   let url = dir + "/polydata-Temperature-0000.vtk"
+      //   let id = dir + '-0'
+      //   let customLayer = contours.addObjectLayer(map, id, url, 0x0022ff)
+      //   map.addLayer(customLayer, 'waterway-label');
+      //   url = dir + "/polydata-Temperature-0003.vtk"
+      //   id = dir + '-3'
+      //   customLayer = contours.addObjectLayer(map, id, url, 0xff2244)
+      //   map.addLayer(customLayer, 'waterway-label')
+      //   url = dir + "/polydata-Temperature-0001.vtk"
+      //   id = dir + '-1'
+      //   customLayer = contours.addObjectLayer(map, id, url, 0x22ff44)
+      //   map.addLayer(customLayer, 'waterway-label')
+      // })
       // url = "static/polydata-Temperature-0003.vtk"
       // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
       // map.addLayer(customLayer, 'waterway-label');
     },
     toggleObject3D() {
       const vis = this.showObject3D ? 'visible' : 'none'
-
-      dirs.forEach((dir) => {
-        let id = dir + '-0'
-        this.map.setLayoutProperty(id, 'visibility', vis)
-        id = dir + '-3'
-        this.map.setLayoutProperty(id, 'visibility', vis)
-        id = dir + '-1'
-        this.map.setLayoutProperty(id, 'visibility', vis)
+      this.objectLayers[this.object3DType].forEach (layer => {
+        this.map.setLayoutProperty(layer, 'visibility', vis)
       })
+      //
+      // dirs.forEach((dir) => {
+      //   let id = dir + '-0'
+      //   id = dir + '-3'
+      //   this.map.setLayoutProperty(id, 'visibility', vis)
+      //   id = dir + '-1'
+      //   this.map.setLayoutProperty(id, 'visibility', vis)
+      // })
     },
     setFilter() {
       let filter = [
