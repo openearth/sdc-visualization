@@ -1,171 +1,342 @@
-[{
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Arctic_Climatology_v1.1\/Salinity.19002014.4Danl.nc",
+[
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl.nc",
     "variable": "Salinity",
     "var_min": 29.0762233734,
     "var_max": 35.2332496643,
-    "percentiles": [31, 36],
+    "percentiles": [
+      10,
+      20,
+      33.5,
+      34.5,
+      36.5,
+      38.5
+    ],
     "x_min": 0.3888888889,
     "x_max": 0.6805555556,
     "y_min": 0.0765991297,
     "y_max": 0.2602403616,
-    "z_min": -1750.0,
-    "z_max": 0.0,
-    "lat_min": 65.0,
-    "lat_max": 82.0,
-    "lon_min": -40.0,
-    "lon_max": 65.0,
-    "paths": ["polydata-Salinity-0000.vtk", "polydata-Salinity-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Arctic_Climatology_v1.1\/Temperature.19002014.4Danl.nc",
+    "z_min": -1750,
+    "z_max": 0,
+    "lat_min": 65,
+    "lat_max": 82,
+    "lon_min": -40,
+    "lon_max": 65,
+    "paths": [
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0000.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0001.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0002.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0003.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0004.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl/polydata-Salinity-0005.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Arctic_Climatology_v1.1/Salinity.19002014.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl.nc",
     "variable": "Temperature",
     "var_min": -0.8618445992,
     "var_max": 9.4116210938,
-    "percentiles": [10, 25],
+    "percentiles": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
     "x_min": 0.3888888889,
     "x_max": 0.6805555556,
     "y_min": 0.0765991297,
     "y_max": 0.2602403616,
-    "z_min": -1750.0,
-    "z_max": 0.0,
-    "lat_min": 65.0,
-    "lat_max": 82.0,
-    "lon_min": -40.0,
-    "lon_max": 65.0,
-    "paths": ["polydata-Temperature-0000.vtk", "polydata-Temperature-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_BlackSea_Climatology_v1.1\/Temperature.4Danl.nc",
+    "z_min": -1750,
+    "z_max": 0,
+    "lat_min": 65,
+    "lat_max": 82,
+    "lon_min": -40,
+    "lon_max": 65,
+    "paths": [
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0000.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0001.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0002.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0003.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0004.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0005.vtk",
+      "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl/polydata-Temperature-0006.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Arctic_Climatology_v1.1/Temperature.19002014.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl.nc",
     "variable": "Temperature",
     "var_min": 6.8222579956,
     "var_max": 16.6586208344,
-    "percentiles": [10, 25],
+    "percentiles": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
     "x_min": 0.575,
     "x_max": 0.6166666667,
     "y_min": 0.3496801095,
     "y_max": 0.3767593981,
-    "z_min": -2000.0,
-    "z_max": 0.0,
+    "z_min": -2000,
+    "z_max": 0,
     "lat_min": 40.5,
     "lat_max": 47.5,
-    "lon_min": 27.0,
-    "lon_max": 42.0,
-    "paths": ["polydata-Temperature-0000.vtk", "polydata-Temperature-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_BlackSea_Climatology_v1.1\/Salinity.4Danl.nc",
+    "lon_min": 27,
+    "lon_max": 42,
+    "paths": [
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0000.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0001.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0002.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0003.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0004.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0005.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl/polydata-Temperature-0006.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Temperature.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl.nc",
     "variable": "Salinity",
     "var_min": 9.5370550156,
     "var_max": 22.3925266266,
-    "percentiles": [31, 36],
+    "percentiles": [
+      10,
+      20,
+      33.5,
+      34.5,
+      36.5,
+      38.5
+    ],
     "x_min": 0.575,
     "x_max": 0.6166666667,
     "y_min": 0.3496801095,
     "y_max": 0.3767593981,
-    "z_min": -2000.0,
-    "z_max": 0.0,
+    "z_min": -2000,
+    "z_max": 0,
     "lat_min": 40.5,
     "lat_max": 47.5,
-    "lon_min": 27.0,
-    "lon_max": 42.0,
-    "paths": ["polydata-Salinity-0000.vtk", "polydata-Salinity-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1\/Salinity.19002012.4Danl.nc",
+    "lon_min": 27,
+    "lon_max": 42,
+    "paths": [
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0000.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0001.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0002.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0003.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0004.vtk",
+      "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl/polydata-Salinity-0005.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_BlackSea_Climatology_v1.1/Salinity.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl.nc",
     "variable": "Salinity",
     "var_min": 0.0983735323,
     "var_max": 35.1925926208,
-    "percentiles": [31, 36],
+    "percentiles": [
+      10,
+      20,
+      33.5,
+      34.5,
+      36.5,
+      38.5
+    ],
     "x_min": 0.525,
     "x_max": 0.5858055539,
     "y_min": 0.2539844307,
     "y_max": 0.32575184,
-    "z_min": -300.0,
-    "z_max": 0.0,
-    "lat_min": 53.0,
+    "z_min": -300,
+    "z_max": 0,
+    "lat_min": 53,
     "lat_max": 65.9349975586,
-    "lon_min": 9.0,
+    "lon_min": 9,
     "lon_max": 30.8899993896,
-    "paths": ["polydata-Salinity-0000.vtk", "polydata-Salinity-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1\/Temperature.19002012.4Danl.nc",
+    "paths": [
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0000.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0001.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0002.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0003.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0004.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl/polydata-Salinity-0005.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Salinity.19002012.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl.nc",
     "variable": "Temperature",
     "var_min": 1.4923003912,
     "var_max": 13.7855482101,
-    "percentiles": [10, 25],
+    "percentiles": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
     "x_min": 0.525,
     "x_max": 0.5858055539,
     "y_min": 0.2539844307,
     "y_max": 0.32575184,
-    "z_min": -300.0,
-    "z_max": 0.0,
-    "lat_min": 53.0,
+    "z_min": -300,
+    "z_max": 0,
+    "lat_min": 53,
     "lat_max": 65.9349975586,
-    "lon_min": 9.0,
+    "lon_min": 9,
     "lon_max": 30.8899993896,
-    "paths": ["polydata-Temperature-0000.vtk", "polydata-Temperature-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Med_Sea_Climatology_v1.1\/Salinity.19002013.4Danl.nc",
+    "paths": [
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0000.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0001.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0002.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0003.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0004.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0005.vtk",
+      "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl/polydata-Temperature-0006.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Baltic_Sea_Climatology_v1.1/Temperature.19002012.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl.nc",
     "variable": "Salinity",
     "var_min": 18.4402294159,
     "var_max": 39.5518951416,
-    "percentiles": [31, 36],
+    "percentiles": [
+      10,
+      20,
+      33.5,
+      34.5,
+      36.5,
+      38.5
+    ],
     "x_min": 0.4743055556,
     "x_max": 0.6013888889,
     "y_min": 0.3557617763,
     "y_max": 0.4125752119,
-    "z_min": -5500.0,
-    "z_max": 0.0,
-    "lat_min": 30.0,
-    "lat_max": 46.0,
+    "z_min": -5500,
+    "z_max": 0,
+    "lat_min": 30,
+    "lat_max": 46,
     "lon_min": -9.25,
     "lon_max": 36.5,
-    "paths": ["polydata-Salinity-0000.vtk", "polydata-Salinity-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-11_TS_Med_Sea_Climatology_v1.1\/Temperature.19002013.4Danl.nc",
+    "paths": [
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0000.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0001.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0002.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0003.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0004.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0005.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Salinity.19002013.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl.nc",
     "variable": "Temperature",
     "var_min": 4.2989702225,
     "var_max": 22.7847805023,
-    "percentiles": [10, 25],
+    "percentiles": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
     "x_min": 0.4743055556,
     "x_max": 0.6013888889,
     "y_min": 0.3557617763,
     "y_max": 0.4125752119,
-    "z_min": -5500.0,
-    "z_max": 0.0,
-    "lat_min": 30.0,
-    "lat_max": 46.0,
+    "z_min": -5500,
+    "z_max": 0,
+    "lat_min": 30,
+    "lat_max": 46,
     "lon_min": -9.25,
     "lon_max": 36.5,
-    "paths": ["polydata-Temperature-0000.vtk", "polydata-Temperature-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-08_TS_Atlantic_Climatology_v1.1\/Salinity.19002013.4Danl.nc",
+    "paths": [
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0000.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0001.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0002.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0003.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0004.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0005.vtk",
+      "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0006.vtk"
+    ],
+    "relative_path": "SDN_2015-11_TS_Med_Sea_Climatology_v1.1/Temperature.19002013.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl.nc",
     "variable": "Salinity",
     "var_min": 29.90691185,
     "var_max": 38.0463218689,
-    "percentiles": [31, 36],
+    "percentiles": [
+      10,
+      20,
+      33.5,
+      34.5,
+      36.5,
+      38.5
+    ],
     "x_min": 0.2722222222,
     "x_max": 0.5272222307,
     "y_min": 0.261550005,
     "y_max": 0.4720801121,
-    "z_min": -5500.0,
-    "z_max": 0.0,
-    "lat_min": 10.0,
+    "z_min": -5500,
+    "z_max": 0,
+    "lat_min": 10,
     "lat_max": 64.8000030518,
-    "lon_min": -82.0,
+    "lon_min": -82,
     "lon_max": 9.8000030518,
-    "paths": ["polydata-Salinity-0000.vtk", "polydata-Salinity-0001.vtk"]
-}, {
-    "path": "\/Users\/baart_f\/data\/odv\/climatology\/SDN_2015-08_TS_Atlantic_Climatology_v1.1\/Temperature.19002013.4Danl.nc",
+    "paths": [
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0000.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0001.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0002.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0003.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0004.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl/polydata-Salinity-0005.vtk"
+    ],
+    "relative_path": "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Salinity.19002013.4Danl.nc"
+  },
+  {
+    "path": "/Users/baart_f/data/odv/climatology/SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl.nc",
     "variable": "Temperature",
     "var_min": -3.3751494884,
     "var_max": 28.2824573517,
-    "percentiles": [10, 25],
+    "percentiles": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
     "x_min": 0.2722222222,
     "x_max": 0.5272222307,
     "y_min": 0.261550005,
     "y_max": 0.4720801121,
-    "z_min": -5500.0,
-    "z_max": 0.0,
-    "lat_min": 10.0,
+    "z_min": -5500,
+    "z_max": 0,
+    "lat_min": 10,
     "lat_max": 64.8000030518,
-    "lon_min": -82.0,
+    "lon_min": -82,
     "lon_max": 9.8000030518,
-    "paths": ["polydata-Temperature-0000.vtk", "polydata-Temperature-0001.vtk"]
-}]
+    "paths": [
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0000.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0001.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0002.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0003.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0004.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0005.vtk",
+      "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl/polydata-Temperature-0006.vtk"
+    ],
+    "relative_path": "SDN_2015-08_TS_Atlantic_Climatology_v1.1/Temperature.19002013.4Danl.nc"
+  }
+]
