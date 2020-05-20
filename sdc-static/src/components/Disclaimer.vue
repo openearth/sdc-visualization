@@ -13,7 +13,7 @@
           </span>
         </v-card-title>
         <v-card-text>
-          This is the visualization services for ODV files of SeaDataCloud.
+          Welcome! Here is the visualization service for large odv data collections and climatologies.
         </v-card-text>
         <v-card-actions>
           <v-row justify="center" class="pa-0 ma-0">
