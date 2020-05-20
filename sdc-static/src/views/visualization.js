@@ -25,13 +25,13 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
 
 
-let dirs = [
-  "models/SDN_ArcticOcean_Clim",
-  "models/SDN_BalticSea_Clim",
-  "models/SDN_BlackSea_Clim",
-  "models/SDN_MedSea_Clim",
-  "models/SDN_NorthAtlanticOcean_Clim"
-]
+// let dirs = [
+//   "models/SDN_ArcticOcean_Clim",
+//   "models/SDN_BalticSea_Clim",
+//   "models/SDN_BlackSea_Clim",
+//   "models/SDN_MedSea_Clim",
+//   "models/SDN_NorthAtlanticOcean_Clim"
+// ]
 
 export default {
   store,
@@ -227,16 +227,18 @@ export default {
 
         const variable = _.get(this.objectLayers, model.variable)
         model.paths.forEach((path) => {
-
-          let customLayer = contours.addObjectLayer(map, path, path, 0x0022ff, model)
+          const url = `models/${path}`
+          let customLayer = contours.addObjectLayer(map, path, url, 0x0022ff, model)
           map.addLayer(customLayer, 'waterway-label')
 
           if (variable) {
-            variable.push(path)
+            this.objectLayers[model.variable].push(path)
+          } else {
+            this.objectLayers[model.variable] = []
           }
         })
       })
-      console.log(objectLayers)
+      console.log(this.objectLayers)
 
       // dirs.forEach((dir) => {
       //   let url = dir + "/polydata-Temperature-0000.vtk"
