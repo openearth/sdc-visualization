@@ -11,3 +11,4 @@ Flask-Cors==3.0.7
 Flask-Login==0.4.1
 flask-talisman
 -e git+https://github.com/SiggyF/webdav-client-python-3#egg=webdav3
+simplejson==3.17.0
