@@ -4,15 +4,13 @@ USER root
 
 # update system and install dependencies
 
-RUN apt-get update && \
-    apt-get install davfs2 --yes
-
+RUN apt-get update
 
 COPY sdc-static/dist /usr/share/nginx/html
 HEALTHCHECK CMD service nginx status || exit 1
 # Expose http port
 EXPOSE 80
 # Allow user to overwrite the html, logs and configuration
-VOLUME /usr/share/nginx/html
+VOLUME /usr/share/nginx/html/public/models
 VOLUME /etc/nginx
 VOLUME /var/log/nginx/log

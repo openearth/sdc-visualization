@@ -12,6 +12,8 @@ data/*/*.tar.gz
 data/*/*.tgz
 data/*/*.txt
 
+sdc-static/public/models
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
