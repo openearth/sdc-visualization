@@ -1,2 +1,4 @@
 node_modules
+sdc-static/public/models
+sdc-static/dist/models
 **/node_modules

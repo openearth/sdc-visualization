@@ -16,8 +16,23 @@ import store from '@/store.js'
 import layers from './ts-layers.json'
 import sources from './ts-sources.json'
 
+// TODO: change to fetch
+import contours from '@/lib/contours.js'
+
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
+
+
+function componentToHex(c) {
+  var hex = Math.round(c).toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return Number("0x" + componentToHex(r) + componentToHex(g) + componentToHex(b));
+}
+
+
 export default {
   store,
   name: 'visualization',
@@ -34,11 +49,15 @@ export default {
     return {
       showMapSettings: false,
       menuDrawer: false,
-      plotDrawer: true,
+      plotDrawer: false,
+      object3DDrawer: false,
+      showObject3D: true,
+      object3DType: 'salinity',
       map: null,
       end: 2015,
       begin: 2000,
       dateRange: [2014, 2015],
+      objectLayers: {},
       timeRange: [],
       graphData: {
         time: [],
@@ -72,7 +91,10 @@ export default {
       this.setFilter()
     })
     this.map = this.$refs.map.map
-    var modes = MapboxDraw.modes;
+    this.map.on('style.load', () => {
+      this.addObjects(this.map)
+    })
+    var modes = MapboxDraw.modes
     modes.draw_polygon = DrawRectangle
     var draw = new MapboxDraw({
       controls: {
@@ -115,6 +137,7 @@ export default {
       layers.forEach(layer => {
         this.map.addLayer(layer)
       })
+
 
       this.map.on('mousemove', (e) => {
         // let year = this.dateRange[1]
@@ -195,6 +218,38 @@ export default {
           this.loadLayers()
         })
     },
+    async addObjects(map) {
+      this.objectLayers = {}
+      const resp = await fetch('models/meta.json')
+      const meta = await resp.json()
+      console.log('meta', meta)
+      meta.forEach((model) => {
+
+        const variable = _.get(this.objectLayers, model.variable)
+
+        if (model.variable !== 'Temperature') {
+          return
+        }
+        model.paths.forEach((path, i) => {
+          const url = `models/${path}`
+          const color = rgbToHex(model.colors[i][0] * 255, model.colors[i][1] * 255, model.colors[i][2] * 255)
+          let customLayer = contours.addObjectLayer(map, path, url, color, model)
+          map.addLayer(customLayer, 'waterway-label')
+
+          if (variable) {
+            this.objectLayers[model.variable].push(path)
+          } else {
+            this.objectLayers[model.variable] = []
+          }
+        })
+      })
+    },
+    toggleObject3D() {
+      const vis = this.showObject3D ? 'visible' : 'none'
+      this.objectLayers[this.object3DType].forEach (layer => {
+        this.map.setLayoutProperty(layer, 'visibility', vis)
+      })
+    },
     setFilter() {
       let filter = [
         'all',
@@ -208,6 +263,7 @@ export default {
         this.map.setFilter(layer, filter)
       })
     },
+
     getTimeRange() {
       fetch(`${store.state.serverUrl}/api/extent`, {
           method: "GET"
