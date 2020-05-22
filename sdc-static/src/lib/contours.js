@@ -4,31 +4,6 @@ import mapboxgl from 'mapbox-gl'
 
 function addObjectLayer(map, id, url, color, metadata) {
 
-  // // metadata
-  // let metadata = {
-  //   "variable":"Temperature",
-  //   "var_min": 4.347969532,
-  //   "var_max":17.7820949554,
-  //   "percentiles":[6.0,8.0,10.0,12.0,14.0,16.0],
-  //   "x_min":-1029705.2898377805,
-  //   "x_max":4063161.4139544852,
-  //   "y_min":3503549.8435043739,
-  //   "y_max":5780349.2202563509,
-  //   "z_min":-5500.0,
-  //   "z_max":0.0,
-  //   "lat_min":30.0,
-  //   "lat_max":46.0,
-  //   "lon_min":-9.25,
-  //   "lon_max":36.5,
-  //   "paths": [
-  //     "polydata-Temperature-0000.ply",
-  //     "polydata-Temperature-0001.ply",
-  //     "polydata-Temperature-0002.ply",
-  //     "polydata-Temperature-0003.ply",
-  //     "polydata-Temperature-0004.ply",
-  //     "polydata-Temperature-0005.ply"
-  //   ]
-  // }
 
   // parameters to ensure the model is georeferenced correctly on the map
   var multiplyZ = 0.000005
@@ -71,28 +46,21 @@ function addObjectLayer(map, id, url, color, metadata) {
     renderingMode: '3d',
     onAdd: function(map, gl) {
       this.camera = new THREE.PerspectiveCamera();
-      this.camera.far = 8000;
-      this.camera.near = 0.001
+      this.camera.far = 1;
+      this.camera.near = 0.0001
       this.scene = new THREE.Scene();
 
-      // create two three.js lights to illuminate the model
-      var directionalLight = new THREE.DirectionalLight(0xffffff);
-      directionalLight.position.set(0.5, 0.1, 0.1).normalize();
-      directionalLight.castShadow = true;
-      this.scene.add(directionalLight);
 
-      var directionalLight2 = new THREE.DirectionalLight(0xffffff);
-      directionalLight2.position.set(0.5, 0.5, 0.1).normalize();
-      directionalLight2.castShadow = true;
-      this.scene.add(directionalLight2);
+      // TODO: replace by more appealing light (this one doesn't  cast shadows)
+      const sky = 0xffffff
+      const ground = 0xB97A20
+      var light = new THREE.HemisphereLight(sky, ground, 1);
+      this.scene.add(light);
 
+      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF );
+      directionalLight.position.set(0.5, 0.0, 0.5)
+      this.scene.add(directionalLight)
 
-      // const floor = new THREE.Mesh(
-      //   new THREE.PlaneBufferGeometry(50, 50),
-      //   new THREE.MeshPhongMaterial({
-      //     color: "white"
-      //   })
-      // );
 
       // TODO: add a floor to cast shadows
       // https://stackoverflow.com/questions/58243572/unable-to-cast-a-shadow-with-three-js-and-mapbox-gl
@@ -110,17 +78,17 @@ function addObjectLayer(map, id, url, color, metadata) {
         function(geometry) {
           geometry.computeVertexNormals();
 
-          var material = new THREE.MeshPhysicalMaterial({
+          var material = new THREE.MeshPhongMaterial({
             color: color,
             flatShading: false,
-            transparency: 0.6,
-            metalness: 0.1,
-            roughness: 0.8,
+            // transparency: 0.6,
+            // metalness: 0.1,
+            // roughness: 0.8,
             alphaTest: 0.5,
             side: THREE.DoubleSide,
             transparent: true,
-            emissive: 0x202929,
-            opacity: 1
+            emissive: 0x333333,
+            opacity: 0.5
           });
           var mesh = new THREE.Mesh(geometry, material);
           mesh.doubleSided = false;
@@ -129,7 +97,7 @@ function addObjectLayer(map, id, url, color, metadata) {
 
           this.scene.add(mesh);
           mesh.scale.z = multiplyZ;
-          mesh.translateZ(0.005)
+          // mesh.translateZ(0.005)
           mesh.castShadow = true;
           mesh.receiveShadow = true;
           window.mesh = mesh
