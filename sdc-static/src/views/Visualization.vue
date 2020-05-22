@@ -120,14 +120,21 @@
 
   </v-app-bar>
   <v-content class="map">
-    <v-mapbox access-token="pk.eyJ1Ijoic2lnZ3lmIiwiYSI6Il8xOGdYdlEifQ.3-JZpqwUa3hydjAJFXIlMA" map-style="mapbox://styles/mapbox/dark-v9" :center="[6.082391473108373, 42.787369913791025]" :zoom="6.014224349175116" :pitch="60" :min-zoom="6" :bearing="-0.7939713170276262"
+    <v-mapbox
+      access-token="pk.eyJ1Ijoic2lnZ3lmIiwiYSI6Il8xOGdYdlEifQ.3-JZpqwUa3hydjAJFXIlMA"
+      map-style="mapbox://styles/mapbox/dark-v9"
+      :center="[6.082391473108373, 42.787369913791025]"
+      :zoom="6.014224349175116"
+      :pitch="60"
+      min-zoom="1"
+      :bearing="-0.7939713170276262"
       class="map" ref="map" container="map">
     </v-mapbox>
   </v-content>
   <map-settings :showMapSettings.sync="showMapSettings" :map="map">
   </map-settings>
 
-  <disclaimer />
+  <disclaimer v-if="false"/>
 </div>
 </template>
 

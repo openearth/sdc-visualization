@@ -17,11 +17,21 @@ import layers from './ts-layers.json'
 import sources from './ts-sources.json'
 
 // TODO: change to fetch
-import meta from '../../public/models/meta.json'
 import contours from '@/lib/contours.js'
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
+
+
+function componentToHex(c) {
+  var hex = Math.round(c).toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return Number("0x" + componentToHex(r) + componentToHex(g) + componentToHex(b));
+}
+
 
 export default {
   store,
@@ -208,14 +218,22 @@ export default {
           this.loadLayers()
         })
     },
-    addObjects(map) {
+    async addObjects(map) {
       this.objectLayers = {}
+      const resp = await fetch('models/meta.json')
+      const meta = await resp.json()
+      console.log('meta', meta)
       meta.forEach((model) => {
 
         const variable = _.get(this.objectLayers, model.variable)
-        model.paths.forEach((path) => {
+
+        if (model.variable !== 'Temperature') {
+          return
+        }
+        model.paths.forEach((path, i) => {
           const url = `models/${path}`
-          let customLayer = contours.addObjectLayer(map, path, url, 0x0022ff, model)
+          const color = rgbToHex(model.colors[i][0] * 255, model.colors[i][1] * 255, model.colors[i][2] * 255)
+          let customLayer = contours.addObjectLayer(map, path, url, color, model)
           map.addLayer(customLayer, 'waterway-label')
 
           if (variable) {
