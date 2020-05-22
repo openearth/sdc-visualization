@@ -14,13 +14,15 @@ import mapSettings from '@/components/MapSettings'
 import chartComponent3D from '@/components/ChartComponent3D'
 import store from '@/store.js'
 import layers from './ts-layers.json'
-import sources from  './ts-sources.json'
+import sources from './ts-sources.json'
 
+// TODO: change to fetch
+import meta from '../../public/models/meta.json'
 import contours from '@/lib/contours.js'
-
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import DrawRectangle from 'mapbox-gl-draw-rectangle-mode'
+
 export default {
   store,
   name: 'visualization',
@@ -38,10 +40,14 @@ export default {
       showMapSettings: false,
       menuDrawer: false,
       plotDrawer: false,
+      object3DDrawer: false,
+      showObject3D: true,
+      object3DType: 'salinity',
       map: null,
       end: 2015,
       begin: 2000,
       dateRange: [2014, 2015],
+      objectLayers: {},
       timeRange: [],
       graphData: {
         time: [],
@@ -202,37 +208,31 @@ export default {
           this.loadLayers()
         })
     },
-    addObjects (map) {
-      // let url = "models/SDN_MedSea_Clim/polydata-Temperature-0005.vtk"
-      // let customLayer = contours.addObjectLayer(map, 'temp-5', url, 0xff55ff)
-      // map.addLayer(customLayer, 'waterway-label');
+    addObjects(map) {
+      this.objectLayers = {}
+      meta.forEach((model) => {
 
-      let dirs = [
-        "models/SDN_ArcticOcean_Clim",
-        "models/SDN_BalticSea_Clim",
-        "models/SDN_BlackSea_Clim",
-        "models/SDN_MedSea_Clim",
-        "models/SDN_NorthAtlanticOcean_Clim"
-      ]
-      dirs.forEach((dir) => {
-        let url = dir + "/polydata-Temperature-0000.vtk"
-        let id = dir + '-0'
-        let customLayer = contours.addObjectLayer(map, id, url, 0x0022ff)
-        map.addLayer(customLayer, 'waterway-label');
-        url = dir + "/polydata-Temperature-0003.vtk"
-        id = dir + '-3'
-        customLayer = contours.addObjectLayer(map, id, url, 0xff2244)
-        map.addLayer(customLayer, 'waterway-label')
-        url = dir + "/polydata-Temperature-0001.vtk"
-        id = dir + '-1'
-        customLayer = contours.addObjectLayer(map, id, url, 0x22ff44)
-        map.addLayer(customLayer, 'waterway-label')
+        const variable = _.get(this.objectLayers, model.variable)
+        model.paths.forEach((path) => {
+          const url = `models/${path}`
+          let customLayer = contours.addObjectLayer(map, path, url, 0x0022ff, model)
+          map.addLayer(customLayer, 'waterway-label')
+
+          if (variable) {
+            this.objectLayers[model.variable].push(path)
+          } else {
+            this.objectLayers[model.variable] = []
+          }
+        })
       })
-      // url = "static/polydata-Temperature-0003.vtk"
-      // customLayer = ObjectLayer('temp-3', url, 0x8855ff)
-      // map.addLayer(customLayer, 'waterway-label');
     },
-    setFilter () {
+    toggleObject3D() {
+      const vis = this.showObject3D ? 'visible' : 'none'
+      this.objectLayers[this.object3DType].forEach (layer => {
+        this.map.setLayoutProperty(layer, 'visibility', vis)
+      })
+    },
+    setFilter() {
       let filter = [
         'all',
         ['>=', 'year', this.dateRange[0]],
@@ -245,6 +245,7 @@ export default {
         this.map.setFilter(layer, filter)
       })
     },
+
     getTimeRange() {
       fetch(`${store.state.serverUrl}/api/extent`, {
           method: "GET"

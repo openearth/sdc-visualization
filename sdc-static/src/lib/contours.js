@@ -2,34 +2,33 @@ import * as THREE from 'three/build/three.module.js'
 import {VTKLoader} from 'three/examples/jsm/loaders/VTKLoader.js'
 import mapboxgl from 'mapbox-gl'
 
+function addObjectLayer(map, id, url, color, metadata) {
 
-function addObjectLayer(map, id, url, color) {
-
-  // metadata
-  let metadata = {
-    "variable":"Temperature",
-    "var_min": 4.347969532,
-    "var_max":17.7820949554,
-    "percentiles":[6.0,8.0,10.0,12.0,14.0,16.0],
-    "x_min":-1029705.2898377805,
-    "x_max":4063161.4139544852,
-    "y_min":3503549.8435043739,
-    "y_max":5780349.2202563509,
-    "z_min":-5500.0,
-    "z_max":0.0,
-    "lat_min":30.0,
-    "lat_max":46.0,
-    "lon_min":-9.25,
-    "lon_max":36.5,
-    "paths": [
-      "polydata-Temperature-0000.ply",
-      "polydata-Temperature-0001.ply",
-      "polydata-Temperature-0002.ply",
-      "polydata-Temperature-0003.ply",
-      "polydata-Temperature-0004.ply",
-      "polydata-Temperature-0005.ply"
-    ]
-  }
+  // // metadata
+  // let metadata = {
+  //   "variable":"Temperature",
+  //   "var_min": 4.347969532,
+  //   "var_max":17.7820949554,
+  //   "percentiles":[6.0,8.0,10.0,12.0,14.0,16.0],
+  //   "x_min":-1029705.2898377805,
+  //   "x_max":4063161.4139544852,
+  //   "y_min":3503549.8435043739,
+  //   "y_max":5780349.2202563509,
+  //   "z_min":-5500.0,
+  //   "z_max":0.0,
+  //   "lat_min":30.0,
+  //   "lat_max":46.0,
+  //   "lon_min":-9.25,
+  //   "lon_max":36.5,
+  //   "paths": [
+  //     "polydata-Temperature-0000.ply",
+  //     "polydata-Temperature-0001.ply",
+  //     "polydata-Temperature-0002.ply",
+  //     "polydata-Temperature-0003.ply",
+  //     "polydata-Temperature-0004.ply",
+  //     "polydata-Temperature-0005.ply"
+  //   ]
+  // }
 
   // parameters to ensure the model is georeferenced correctly on the map
   var multiplyZ = 0.000005
