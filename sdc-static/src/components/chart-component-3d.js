@@ -1,3 +1,5 @@
+import store from '@/store.js'
+
 import echarts from 'echarts/lib/echarts'
 import echartsgl from 'echarts-gl'
 
@@ -62,7 +64,7 @@ export default {
     updateGraph() {
       const ids = this.profileIds.join('&cdi_ids=')
 
-      fetch(`http://localhost:5000/api/get_profiles?cdi_ids=${ids}`, {
+      fetch(`${store.state.serverUrl}/api/get_profiles?cdi_ids=${ids}`, {
           mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
