@@ -52,7 +52,8 @@ export default {
       plotDrawer: false,
       object3DDrawer: false,
       showObject3D: true,
-      object3DType: 'salinity',
+      // only works for temperature for now
+      object3DType: 'Temperature',
       map: null,
       end: 2015,
       begin: 2000,

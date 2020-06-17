@@ -3,7 +3,7 @@ import {VTKLoader} from 'three/examples/jsm/loaders/VTKLoader.js'
 import mapboxgl from 'mapbox-gl'
 
 function addObjectLayer(map, id, url, color, metadata) {
-
+  // todo, use metadata properly
 
   // parameters to ensure the model is georeferenced correctly on the map
   var multiplyZ = 0.000005
@@ -37,7 +37,6 @@ function addObjectLayer(map, id, url, color, metadata) {
      */
     scale: modelScale
   };
-  console.log(modelTransform)
 
   // configuration of the custom layer for a 3D model per the CustomLayerInterface
   var customLayer = {
