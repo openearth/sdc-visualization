@@ -58,7 +58,7 @@ export default {
 
     },
     createGraph() {
-      var dom = document.getElementById("chart-container")
+      var dom = document.getElementById("chart-3d-container")
       this.graph = echarts.init(dom)
     },
     updateGraph() {

@@ -8,7 +8,7 @@
         <v-select :items="variables" v-model="y" label="Y"></v-select>
       </v-flex> -->
       <v-flex xs12 pa-0>
-        <div id="chart-container">
+        <div id="chart-3d-container">
         </div>
       </v-flex>
       <v-flex>
@@ -28,7 +28,7 @@
 </script>
 
 <style>
-#chart-container {
+#chart-3d-container {
   width: 360px;
   height: 300px;
 }
