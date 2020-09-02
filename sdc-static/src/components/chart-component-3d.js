@@ -99,6 +99,10 @@ export default {
           })
           const symbolSize = 2.5
           let options = {
+            title: {
+              text: 'Water temperature',
+              left: 'center',
+          },
             grid3D: {},
             xAxis3D: {
               name: 'Latitude',
