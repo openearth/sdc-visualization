@@ -292,7 +292,7 @@ def get_cdi_id_var(ds):
 
 
 
-@blueprint.route('/api/get_timeseries', methods=['GET', 'POST'])
+#@blueprint.route('/api/get_timeseries', methods=['GET', 'POST']) renamed at get_profile
 @blueprint.route('/api/get_profile', methods=['GET', 'POST'])
 @cross_origin()
 def get_profile():
@@ -477,9 +477,10 @@ def get_profiles():
     """ Return profile for selected points"""
     # read inputs
     cdi_ids_input = request.args.getlist("cdi_ids")
-
+    cdi_ids_input = list(set(cdi_ids_input))
+    #TODO read cdi_ids and if a cdi_id is the same as the previous one pass it. 
+    print ('cdi_ids_input without duplicates', cdi_ids_input)
     dataset = request.values.get("dataset")
-
     ds = get_ds(dataset=dataset)
     if ds is None:
         return jsonify({
@@ -492,11 +493,16 @@ def get_profiles():
     cdi_ids = netCDF4.chartostring(ds.variables[cdi_id_var][:])
 
     # create a list with the idxs of the given cdi_ids
-    idxs = []
-    for cdi_id in cdi_ids_input:
 
-        idx = np.argmax(cdi_ids == cdi_id)
-        idxs.append(idx)
+    all_idxs = []
+    for cdi_id in cdi_ids_input:
+        cdi_id_idxs = np.argwhere(cdi_ids == cdi_id)
+        cdi_id_idxs.tolist()
+        idxs = []
+        for idx in cdi_id_idxs:
+            idxs.append(idx[0])            
+        all_idxs = all_idxs + idxs
+    
 
     # create a list with the var that contain the temperature, salinity and depth values
     var_names = [
@@ -512,12 +518,13 @@ def get_profiles():
     output = []
     output.append(titles)
 
-    for idx in idxs:
+    for idx in all_idxs: 
 
         cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
         lon = ds.variables['longitude'][idx].item(0)
         lat = ds.variables['latitude'][idx].item(0)
-        
+        print ('cdi_id', 'lon', 'lat')
+        print (cdi_id, lon, lat)        
 
         np.array2string(cdi_id)
 
