@@ -223,33 +223,50 @@ export default {
       this.objectLayers = {}
       const resp = await fetch('models/meta.json')
       const meta = await resp.json()
-      console.log('meta', meta)
       meta.forEach((model) => {
 
-        const variable = _.get(this.objectLayers, model.variable)
-
-        if (model.variable !== 'Temperature') {
-          return
-        }
         model.paths.forEach((path, i) => {
           const url = `models/${path}`
           const color = rgbToHex(model.colors[i][0] * 255, model.colors[i][1] * 255, model.colors[i][2] * 255)
           let customLayer = contours.addObjectLayer(map, path, url, color, model)
           map.addLayer(customLayer, 'waterway-label')
 
-          if (variable) {
-            this.objectLayers[model.variable].push(path)
-          } else {
-            this.objectLayers[model.variable] = []
-          }
+          // store this model path in the objectLayers
+          let layers = _.get(this.objectLayers, model.variable, [])
+          layers.push(path)
+          this.objectLayers[model.variable] = layers
         })
+
       })
+      // toggle correct layers
+      this.toggleObject3D()
     },
     toggleObject3D() {
-      const vis = this.showObject3D ? 'visible' : 'none'
-      this.objectLayers[this.object3DType].forEach (layer => {
-        this.map.setLayoutProperty(layer, 'visibility', vis)
-      })
+
+      // loop over all 3d layers
+      const object3DTypes = Object.keys(this.objectLayers)
+      // layers are stored in the nested structure objectLayers
+      if (!this.showObject3D) {
+        // hide all 3D layers
+        object3DTypes.forEach(object3DType => {
+          this.objectLayers[object3DType].forEach (layer => {
+            this.map.setLayoutProperty(layer, 'visibility', 'none')
+          })
+        })
+      } else {
+        // hide everything
+        object3DTypes.forEach(object3DType => {
+          this.objectLayers[object3DType].forEach (layer => {
+            // disable or enable the current selection
+            if (object3DType === this.object3DType) {
+              this.map.setLayoutProperty(layer, 'visibility', 'visible')
+            } else {
+              this.map.setLayoutProperty(layer, 'visibility', 'none')
+            }
+          })
+        })
+
+      }
     },
     setFilter() {
       let filter = [
