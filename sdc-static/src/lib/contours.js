@@ -53,12 +53,25 @@ function addObjectLayer(map, id, url, color, metadata) {
       // TODO: replace by more appealing light (this one doesn't  cast shadows)
       const sky = 0xffffff
       const ground = 0xB97A20
-      var light = new THREE.HemisphereLight(sky, ground, 1);
-      this.scene.add(light);
+      var hemiLight = new THREE.HemisphereLight(sky, ground, 100);
+      // hemiLight.castShadow = true
+      this.scene.add(hemiLight);
+      // hemiLight.position.set( 0.29277777671813965, 0.1, 0.3821312487125397 );
 
-      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF );
-      directionalLight.position.set(0.5, 0.0, 0.5)
-      this.scene.add(directionalLight)
+
+      // x - EW (0, 0) -> 0.5, 0.5
+      // y - NS (0,0 ->  0.5, 0.5
+      // z - depth  (0.1) very high
+      hemiLight.position.set( 0.5, 0.2, 0.01 );
+      this.scene.add( hemiLight );
+
+      let hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 0.01 );
+      this.scene.add( hemiLightHelper );
+
+      // TODO: focusss
+      // var directionalLight = new THREE.DirectionalLight( 0xFFFFFF );
+      // directionalLight.position.set(0.5, 0.2, 0.01)
+      // this.scene.add(directionalLight)
 
 
       // TODO: add a floor to cast shadows
@@ -101,7 +114,8 @@ function addObjectLayer(map, id, url, color, metadata) {
           mesh.receiveShadow = true;
           window.mesh = mesh
         }.bind(this)
-      );
+      )
+
 
       this.map = map;
 
