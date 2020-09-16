@@ -106,7 +106,7 @@
           <v-icon>show_chart</v-icon>
         </v-btn>
       </template>
-      <span>Tooltip</span>
+      <span>Show chart</span>
     </v-tooltip>
 
     <v-tooltip bottom>
