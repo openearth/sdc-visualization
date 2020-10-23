@@ -18,7 +18,8 @@ export default new Vuex.Store({
     series: null,
     layers: [],
     requestedYears: [],
-    dataTable: []
+    dataTable: [],
+    geojson: null
   },
   mutations: {
     credentials(state, credentials) {
@@ -66,6 +67,9 @@ export default new Vuex.Store({
       // remove the php part inline
       filename = _.replace(filename, '/remote.php/webdav', b2dropPath)
       Vue.set(state, 'filename', filename)
+    },
+    setGeojson(state, data) {
+      Vue.set(state, 'geojson', data)
     }
   },
   actions: {

@@ -2,6 +2,7 @@ import store from '@/store.js'
 
 import echarts from 'echarts/lib/echarts'
 import echartsgl from 'echarts-gl'
+import getProfiles from '../lib/get-profiles'
 
 import Vue from 'vue'
 // TODO: replace this with vue-echart
@@ -63,7 +64,7 @@ export default {
     },
     updateGraph() {
       const ids = this.profileIds.join('&cdi_ids=')
-
+      
       fetch(`${store.state.serverUrl}/api/get_profiles?cdi_ids=${ids}`, {
           mode: 'cors',
           headers: {
