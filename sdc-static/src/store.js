@@ -19,7 +19,7 @@ export default new Vuex.Store({
     layers: [],
     requestedYears: [],
     dataTable: [],
-    geojson: null
+    selection: null
   },
   mutations: {
     credentials(state, credentials) {
@@ -68,8 +68,8 @@ export default new Vuex.Store({
       filename = _.replace(filename, '/remote.php/webdav', b2dropPath)
       Vue.set(state, 'filename', filename)
     },
-    setGeojson(state, data) {
-      Vue.set(state, 'geojson', data)
+    selection(state, data) {
+      Vue.set(state, 'selection', data)
     }
   },
   actions: {
@@ -193,21 +193,6 @@ export default new Vuex.Store({
       })
 
     },
-    loadDataTable({
-      state,
-      commit
-    }) {
-      let url = "./med_test.json"
-      return fetch(url)
-      .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        console.log('commiting datatable ')
-        json = [['a', 'b', 'c', 'd'], [1, 1, 1, 1], [2, 2, 2, 2]]
-        commit('dataTable', json)
-      })
-    },
     loadFeature({
       state,
       commit
@@ -216,7 +201,6 @@ export default new Vuex.Store({
       let searchParams = new URLSearchParams()
       searchParams.append('cdi_id', feature.properties.cdi_id)
       searchParams.append('dataset', feature.properties.dataset)
-      let searchString = searchParams.toString()
       let url = `${state.serverUrl}/api/get_profile?${searchParams}`
       return fetch(url)
         .then((res) => {
