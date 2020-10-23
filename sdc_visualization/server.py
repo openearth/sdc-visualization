@@ -42,7 +42,7 @@ login_manager = LoginManager()
 # Lookup the relevant URL's
 # for now added /
 VIZ_URL = os.environ.get('VIZ_URL', 'https://jellyfish.argo.grnet.gr/viz/')
-DASHBOARD_URL = os.environ.get('DASHBOARD_URL', 'https://sdc-test.argo.grnet.gr')
+DASHBOARD_URL = os.environ.get('DASHBOARD_URL', 'https://vre.seadatanet.gr')
 
 
 # TODO: move some of this out of here...
@@ -517,7 +517,7 @@ def get_profiles():
         cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
         lon = ds.variables['longitude'][idx].item(0)
         lat = ds.variables['latitude'][idx].item(0)
-        
+
 
         np.array2string(cdi_id)
 
@@ -559,7 +559,7 @@ def get_profiles():
     response = {
         "data": output
     }
-    
+
     #, allow_nan=False
     return simplejson.dumps(response, ignore_nan=True)
 
