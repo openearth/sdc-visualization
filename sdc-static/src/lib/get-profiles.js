@@ -1,13 +1,15 @@
-import axios from 'axios'
-
 export default function (data) {
-  return axios({
-    method: 'post',
-    url: 'http://localhost:5000/api/get_profiles',
-    data: JSON.parse(data),
-    headers: {'Content-Type': 'application/xml'}
+  // define url based on the rest api url, can vary between environments
+  const url = `${process.env.VUE_APP_REST}/api/get_profiles`
+  return fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data) // body data type must match "Content-Type" header
   })
-    .then((response) => {
-      return response.data
+    .then((resp) => {
+      return resp.json()
     })
 }
