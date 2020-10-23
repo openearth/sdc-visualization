@@ -6,23 +6,31 @@ function addObjectLayer(map, id, url, color, metadata) {
   // todo, use metadata properly
 
   // parameters to ensure the model is georeferenced correctly on the map
+
+  // this is the vertical scaling of the geometry.
+  // As we are not using models in m but in mapbox coordinate we have to significantly scale our model in the vertical. The vertical height should be something like half of the circumcenter of the earth. So about 40,007.863 km  / 2.
+  // for a depth of 1km  you need something like 0.00001249754
+  // but then we want to exagerate it a bit so we multiply that by a factor of about 6
   var multiplyZ = 0.000008
 
+  // we already precomputed models to mapbox coordinates
   var modelOrigin = [0, 0] // metadata.lon_min, metadata.lat_min]
-  // modelOrigin = [0.5, 0.5]
-  var modelAltitude = 300;
+  var modelAltitude = 0;
   var modelRotate = [0, 0, 0];
 
   var modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
     modelOrigin,
     modelAltitude
   );
+  // this is what you would normally use
   var modelScale = modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
 
+  // but we prescaled the models
   modelScale = 1
 
   // transformation parameters to position, rotate and scale the 3D model onto the map
   var modelTransform = {
+    // same here, everything is prescaled
     // translateX: modelAsMercatorCoordinate.x,
     // translateY: modelAsMercatorCoordinate.y,
     // translateZ: modelAsMercatorCoordinate.z,
@@ -45,28 +53,18 @@ function addObjectLayer(map, id, url, color, metadata) {
     renderingMode: '3d',
     onAdd: function(map, gl) {
       this.camera = new THREE.PerspectiveCamera();
+      // this is the whole earth
       this.camera.far = 1;
+      // make this very small, see above (this is 80m, so when you come closer than 80m) objects dissapear
       this.camera.near = 0.000001
       this.scene = new THREE.Scene();
 
-
-      // TODO: replace by more appealing light (this one doesn't  cast shadows)
-      // const sky = 0xffffff
-      // const ground = 0xB97A20
-      // var hemiLight = new THREE.HemisphereLight(sky, ground, 0.1);
-      // hemiLight.castShadow = true
-      // this.scene.add(hemiLight);
-      // hemiLight.position.set( 0.29277777671813965, 0.1, 0.3821312487125397 );
-
-
+      // So this is a the coordinate system:
       // x - EW (0, 0) -> 0.5, 0.5
       // y - NS (0, 0) ->  0.5, 0.5
-      // z - depth  (0.1) very high
-      // hemiLight.position.set( 0.5, 0.2, 0.01 );
-      // this.scene.add( hemiLight );
+      // z - depth  (0.1 == very high (8000km)
 
-      // let hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 0.01 );
-      // this.scene.add( hemiLightHelper );
+      // if you want to test light on a simple object, you can add the sphere below
 
       // var sphereGeometry = new THREE.SphereBufferGeometry( 0.001, 32, 32);
       // var sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
@@ -76,9 +74,7 @@ function addObjectLayer(map, id, url, color, metadata) {
       // sphere.receiveShadow = true; //default
       // this.scene.add( sphere )
 
-
-
-      // TODO: add a floor to cast shadows
+      // TODO: add a floor to cast shadows and add an extra land surface map to receive them
       // https://stackoverflow.com/questions/58243572/unable-to-cast-a-shadow-with-three-js-and-mapbox-gl
       // floor.receiveShadow = true;
       // floor.rotation.set(Math.PI / -2, 0, 0);
@@ -107,19 +103,16 @@ function addObjectLayer(map, id, url, color, metadata) {
             emissive: 0x555555,
             // opacity: 0.5
           });
-          // var meshMaterial = new THREE.MeshStandardMaterial( { color: color } );
 
           var mesh = new THREE.Mesh(geometry, meshMaterial);
-          // mesh.doubleSided = false;
-
-          // mesh.rotation.z = Math.PI;
 
           mesh.castShadow = true;
           mesh.receiveShadow = true;
+          // vertical reference is not rescaled, so scale it now
           mesh.scale.z = multiplyZ;
 
           this.scene.add(mesh);
-          // mesh.translateZ(0.005)
+          // make it available global, for debugging/demos.
           window.mesh = mesh
         }.bind(this)
       )
