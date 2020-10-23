@@ -6,7 +6,7 @@ function addObjectLayer(map, id, url, color, metadata) {
   // todo, use metadata properly
 
   // parameters to ensure the model is georeferenced correctly on the map
-  var multiplyZ = 0.000001
+  var multiplyZ = 0.000008
 
   var modelOrigin = [0, 0] // metadata.lon_min, metadata.lat_min]
   // modelOrigin = [0.5, 0.5]
@@ -46,7 +46,7 @@ function addObjectLayer(map, id, url, color, metadata) {
     onAdd: function(map, gl) {
       this.camera = new THREE.PerspectiveCamera();
       this.camera.far = 1;
-      this.camera.near = 0.0001
+      this.camera.near = 0.000001
       this.scene = new THREE.Scene();
 
 
@@ -97,14 +97,15 @@ function addObjectLayer(map, id, url, color, metadata) {
           var meshMaterial = new THREE.MeshPhongMaterial({
             color: color,
             flatShading: false,
-            transparency: 0.6,
+            // transparency: 0.6,
+            wireframe: false,
             // metalness: 0.1,
             // roughness: 0.8,
-            alphaTest: 0.5,
+            // alphaTest: 0.5,
             side: THREE.DoubleSide,
-            transparent: true,
-            emissive: 0x333333,
-            opacity: 0.5
+            // transparent: true,
+            emissive: 0x555555,
+            // opacity: 0.5
           });
           // var meshMaterial = new THREE.MeshStandardMaterial( { color: color } );
 
@@ -132,7 +133,9 @@ function addObjectLayer(map, id, url, color, metadata) {
       this.scene.add(target)
 
 
-      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 20 );
+      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 30)
+
+      // set to north, east of meridean
       directionalLight.position.set(0.6, 0.2, 0.01)
       directionalLight.castShadow = true;            // default false
       directionalLight.target = target
