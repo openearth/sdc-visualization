@@ -6,7 +6,7 @@ function addObjectLayer(map, id, url, color, metadata) {
   // todo, use metadata properly
 
   // parameters to ensure the model is georeferenced correctly on the map
-  var multiplyZ = 0.000005
+  var multiplyZ = 0.000001
 
   var modelOrigin = [0, 0] // metadata.lon_min, metadata.lat_min]
   // modelOrigin = [0.5, 0.5]
@@ -51,8 +51,8 @@ function addObjectLayer(map, id, url, color, metadata) {
 
 
       // TODO: replace by more appealing light (this one doesn't  cast shadows)
-      const sky = 0xffffff
-      const ground = 0xB97A20
+      // const sky = 0xffffff
+      // const ground = 0xB97A20
       // var hemiLight = new THREE.HemisphereLight(sky, ground, 0.1);
       // hemiLight.castShadow = true
       // this.scene.add(hemiLight);
@@ -68,26 +68,13 @@ function addObjectLayer(map, id, url, color, metadata) {
       // let hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 0.01 );
       // this.scene.add( hemiLightHelper );
 
-      var sphereGeometry = new THREE.SphereBufferGeometry( 0.001, 32, 32);
-      var sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
-      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-      sphere.position.set(0.5, 0.35, 0.001)
-      sphere.castShadow = true; //default is false
-      sphere.receiveShadow = true; //default
-      this.scene.add( sphere )
-
-
-      // TODO: focusss
-      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF );
-      directionalLight.position.set(0.5, 0.2, 0.01)
-      directionalLight.castShadow = true;            // default false
-      directionalLight.target = sphere
-      this.scene.add(directionalLight)
-
-      let directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.01)
-      this.scene.add(directionalLightHelper)
-
-
+      // var sphereGeometry = new THREE.SphereBufferGeometry( 0.001, 32, 32);
+      // var sphereMaterial = new THREE.MeshStandardMaterial( { color: 0xff0000 } );
+      // var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+      // sphere.position.set(0.5, 0.35, 0.001)
+      // sphere.castShadow = true; //default is false
+      // sphere.receiveShadow = true; //default
+      // this.scene.add( sphere )
 
 
 
@@ -107,19 +94,19 @@ function addObjectLayer(map, id, url, color, metadata) {
         function(geometry) {
           geometry.computeVertexNormals();
 
-          var material = new THREE.MeshPhongMaterial({
+          var meshMaterial = new THREE.MeshPhongMaterial({
             color: color,
             flatShading: false,
-            // transparency: 0.6,
+            transparency: 0.6,
             // metalness: 0.1,
             // roughness: 0.8,
-            // alphaTest: 0.5,
+            alphaTest: 0.5,
             side: THREE.DoubleSide,
-            // transparent: true,
-            // emissive: 0x333333,
-            // opacity: 0.5
+            transparent: true,
+            emissive: 0x333333,
+            opacity: 0.5
           });
-          var meshMaterial = new THREE.MeshStandardMaterial( { color: color } );
+          // var meshMaterial = new THREE.MeshStandardMaterial( { color: color } );
 
           var mesh = new THREE.Mesh(geometry, meshMaterial);
           // mesh.doubleSided = false;
@@ -128,7 +115,6 @@ function addObjectLayer(map, id, url, color, metadata) {
 
           mesh.castShadow = true;
           mesh.receiveShadow = true;
-          multiplyZ = 0.0001
           mesh.scale.z = multiplyZ;
 
           this.scene.add(mesh);
@@ -136,6 +122,34 @@ function addObjectLayer(map, id, url, color, metadata) {
           window.mesh = mesh
         }.bind(this)
       )
+
+
+      // TODO: focusss
+
+      var target = new THREE.Object3D()
+      target.position.set(0.5, 0.5, 0)
+      target.scale.z = multiplyZ;
+      this.scene.add(target)
+
+
+      var directionalLight = new THREE.DirectionalLight( 0xFFFFFF, 20 );
+      directionalLight.position.set(0.6, 0.2, 0.01)
+      directionalLight.castShadow = true;            // default false
+      directionalLight.target = target
+      directionalLight.scale.z = multiplyZ;
+      this.scene.add(directionalLight)
+
+      window.directionalLight  = directionalLight
+
+      // let directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.01)
+      // directionalLightHelper.scale.z = multiplyZ
+      // this.scene.add(directionalLightHelper)
+
+      // var pointLight = new THREE.PointLight( 0xFFFFFF, 10 );
+      // pointLight.position.set(0.4, 0.5, -0.1)
+      // pointLight.castShadow = true;            // default false
+      // this.scene.add(pointLight)
+
 
 
       this.map = map;
@@ -149,7 +163,7 @@ function addObjectLayer(map, id, url, color, metadata) {
       this.renderer.setClearColor(0xcccccc)
       this.renderer.shadowMap.enabled = true
       this.renderer.autoClear = false;
-      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      // this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     },
     render: function(gl, matrix) {
       var rotationX = new THREE.Matrix4().makeRotationAxis(
