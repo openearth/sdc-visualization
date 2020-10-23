@@ -1,6 +1,6 @@
 import {
   mapActions,
-  mapState, 
+  mapState,
 } from 'vuex'
 
 // todo: use proper date formatting
@@ -114,7 +114,7 @@ export default {
         const data = draw.getAll()
         if (data.features.length) {
             console.log('geojson', data.features)
-            this.$store.commit('setGeojson', JSON.parse(data.features))
+            this.$store.commit('selection', data)
         }
         const NW = this.map.project(e.features[0].geometry.coordinates[0][3])
         const SE = this.map.project(e.features[0].geometry.coordinates[0][1])
@@ -211,7 +211,6 @@ export default {
     ...mapActions([
       'loadData',
       'loadLayerData',
-      'loadDataTable',
       'loadFeature'
     ]),
     load() {
