@@ -478,7 +478,7 @@ def get_profiles():
     # read inputs
     cdi_ids_input = request.args.getlist("cdi_ids")
     cdi_ids_input = list(set(cdi_ids_input))
-    #TODO read cdi_ids and if a cdi_id is the same as the previous one pass it. 
+    #TODO read cdi_ids and if a cdi_id is the same as the previous one pass it.
     print ('cdi_ids_input without duplicates', cdi_ids_input)
     dataset = request.values.get("dataset")
     ds = get_ds(dataset=dataset)
@@ -500,9 +500,9 @@ def get_profiles():
         cdi_id_idxs.tolist()
         idxs = []
         for idx in cdi_id_idxs:
-            idxs.append(idx[0])            
+            idxs.append(idx[0])
         all_idxs = all_idxs + idxs
-    
+
 
     # create a list with the var that contain the temperature, salinity and depth values
     var_names = [
@@ -518,13 +518,13 @@ def get_profiles():
     output = []
     output.append(titles)
 
-    for idx in all_idxs: 
+    for idx in all_idxs:
 
         cdi_id = netCDF4.chartostring(ds.variables[cdi_id_var][idx])
         lon = ds.variables['longitude'][idx].item(0)
         lat = ds.variables['latitude'][idx].item(0)
         print ('cdi_id', 'lon', 'lat')
-        print (cdi_id, lon, lat)        
+        print (cdi_id, lon, lat)
 
         np.array2string(cdi_id)
 
@@ -535,7 +535,7 @@ def get_profiles():
             var = ds.variables[var_name]
             try:
                 idx_variables[var.long_name] = var[idx]
-            except IdexError:
+            except IndexError:
                 print ("failed to index {} with index {}".format(var,  idx))
         cdi_id_array = np.empty(shape = idx_variables["Depth"].shape, dtype = '<U28')
         cdi_id_array.fill(str(cdi_id))
@@ -566,7 +566,7 @@ def get_profiles():
     response = {
         "data": output
     }
-    
+
     #, allow_nan=False
     return simplejson.dumps(response, ignore_nan=True)
 
