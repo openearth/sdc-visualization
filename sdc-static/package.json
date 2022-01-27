@@ -20,7 +20,7 @@
     "mapbox-gl-draw-rectangle-mode": "^1.0.4",
     "moment": "^2.24.0",
     "papaparse": "^5.1.0",
-    "three": "^0.115.0",
+    "three": "^0.137.0",
     "vue": "^2.6.9",
     "vue-router": "^3.0.2",
     "vue2-filters": "^0.6.0",
