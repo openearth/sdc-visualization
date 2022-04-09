@@ -18,7 +18,7 @@
     "ion-rangeslider": "<2.3.0",
     "mapbox-gl": "^1.9.1",
     "mapbox-gl-draw-rectangle-mode": "^1.0.4",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "papaparse": "^5.1.0",
     "three": "^0.115.0",
     "vue": "^2.6.9",
