@@ -4,7 +4,7 @@ ipython==7.2.0
 pyproj==2.6.0
 matplotlib==3.0.2
 netCDF4==1.4.2
-numpy==1.16.0
+numpy==1.22.0
 pandas==0.23.4
 Flask==1.0.2
 Flask-Cors==3.0.7
